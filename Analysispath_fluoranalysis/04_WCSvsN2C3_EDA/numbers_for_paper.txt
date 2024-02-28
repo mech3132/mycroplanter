@@ -1,0 +1,21 @@
+[1] "Inoculation ratio (dom) and rate of plant healthiness"
+# A tibble: 3 × 7
+  dom     mean_WN_FC_fluor_offset min_diff max_diff healthy  rate  raten
+  <chr>                     <dbl>    <dbl>    <dbl>   <int> <dbl>  <dbl>
+1 EQUAL                     0.517    -5.29    9.58      105 0.561 0.439 
+2 PATH                     -6.43    -12.9     0.827      54 0.143 0.857 
+3 PROTECT                   6.85      3.53   14.3       341 0.917 0.0833
+[1] "ONLY MONOCULTURE TREATMENTS"
+# A tibble: 4 × 7
+  StrainMix   mean_WN_FC_fluor_offset min_diff max_diff healthy  rate  raten
+  <chr>                         <dbl>    <dbl>    <dbl>   <int> <dbl>  <dbl>
+1 MOCK-MOCK                    -0.654   -10.1      6.41      53 0.898 0.102 
+2 MOCK-N2C3                    -6.47    -12.9     -3.91      38 0.201 0.799 
+3 WCS365-MOCK                   7.17      4.85    14.3      170 0.924 0.0761
+4 WCS365-N2C3                   0.249   -11.9     14.3      292 0.519 0.481 
+# A tibble: 3 × 2
+  dom     mean_WN_FC_CFU
+  <chr>            <dbl>
+1 EQUAL           -0.456
+2 PATH            -0.982
+3 PROTECT          5.07 
