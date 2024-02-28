@@ -9,3 +9,8 @@ Fluorescence experiment (fluor)
 Priority effects experiment (priorityeffets)
 Priority effects on plates (priorityplates)
 
+
+---------------
+
+In main directory, you will find the image processing cript, 'process_athal_scan.py'. For help running the script, please see the associated README file.
+
