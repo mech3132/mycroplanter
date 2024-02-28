@@ -1,0 +1,62 @@
+[1] "both experimetnts 1"
+                           elpd_diff se_diff
+brms_mixedonly               0.0       0.0  
+brms_mixedonly_nostrainmix  -5.7       4.9  
+brms_mixedonly_nofluor     -15.7       5.7  
+[1] "only single models"
+                           elpd_diff se_diff
+brms_mixedonly_nostrainmix   0.0       0.0  
+brms_mixedonly_nofluor     -10.0       6.2  
+[1] "both model"
+ Family: bernoulli 
+  Links: mu = logit 
+Formula: Alive ~ WN_FC_fluor_offset + StrainMix + StrainMix:transfer_h 
+   Data: dat_plant_forbrms (Number of observations: 160) 
+  Draws: 4 chains, each with iter = 4000; warmup = 2000; thin = 1;
+         total post-warmup draws = 8000
+
+Population-Level Effects: 
+                                Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept                           1.33      0.51     0.35     2.39 1.00     4993     5213
+WN_FC_fluor_offset                  0.52      0.11     0.32     0.75 1.00     3011     3658
+StrainMixN2C3MWCS365               -2.83      0.91    -4.75    -1.10 1.00     2767     3866
+StrainMixWCS365MN2C3:transfer_h    -0.03      0.03    -0.09     0.04 1.00     3313     4400
+StrainMixN2C3MWCS365:transfer_h     0.03      0.03    -0.02     0.09 1.00     3214     4264
+
+Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+[1] "fluor only"
+ Family: bernoulli 
+  Links: mu = logit 
+Formula: Alive ~ WN_FC_fluor_offset 
+   Data: dat_plant_forbrms (Number of observations: 160) 
+  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup draws = 4000
+
+Population-Level Effects: 
+                   Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept              0.06      0.21    -0.37     0.47 1.00     3846     2793
+WN_FC_fluor_offset     0.41      0.06     0.29     0.54 1.00     3088     2576
+
+Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+[1] "Strainmix only"
+ Family: bernoulli 
+  Links: mu = logit 
+Formula: Alive ~ StrainMix + StrainMix:transfer_h 
+   Data: dat_plant_forbrms (Number of observations: 160) 
+  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup draws = 4000
+
+Population-Level Effects: 
+                                Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept                           0.52      0.41    -0.27     1.35 1.00     3128     2401
+StrainMixN2C3MWCS365                0.02      0.54    -1.04     1.06 1.00     2325     2587
+StrainMixWCS365MN2C3:transfer_h     0.08      0.03     0.02     0.14 1.00     2328     1997
+StrainMixN2C3MWCS365:transfer_h    -0.05      0.02    -0.09    -0.02 1.00     2667     2405
+
+Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
