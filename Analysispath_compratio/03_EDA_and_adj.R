@@ -588,15 +588,23 @@ save(col_all, file="03_EDA_and_adj/plant_colours.RData")
  ggsave(filename = "03_EDA_and_adj/gg_platemap_pilot.png", gg_platemap_pilot, width=8, height=8)
  
 gg_pilot_n2c3wcs <- allDat_pilot %>%
-  ggplot(aes(x=path, y=Healthiness_hsv)) +
-  geom_boxplot() +
-  geom_jitter(aes(col=(total_cells_log))) +
+  mutate(inoc = ifelse(StrainMix=="MOCK-MOCK", "MOCK", 
+                       ifelse(StrainMix == "MOCK-N2C3", "N2C3", 
+                              ifelse(StrainMix == "WCS365-MOCK", "WCS365", "N2C3 +\nWCS365")))) %>%
+  mutate(inoc = factor(inoc, levels=c("MOCK","WCS365","N2C3","N2C3 +\nWCS365"))) %>%
+  rowwise() %>%
+  mutate(single_maxcell = round(max(c(protect_cells_log, path_cells_log)))) %>% ungroup() %>%
+  ggplot(aes(x=inoc, y=Healthiness_hsv)) +
+  geom_boxplot(outlier.color = NA) +
+  geom_jitter(aes(col=factor(single_maxcell))) +
+  theme_test() +
   theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5))+
   geom_hline(aes(yintercept=400)) +
-  facet_grid(.~protect, drop=TRUE, scales="free_x") +
-  scale_color_viridis_c()+
-  labs(col="Approx # cells\nat inoculation\n(log10)") +
-  xlab("Pathogen added") + ylab("Health metric")
+  scale_color_manual(values=c("darkgrey","yellow2","gold2","goldenrod","goldenrod4","coral4"))+
+  # facet_grid(.~protect, drop=TRUE, scales="free_x") +
+  # scale_color_viridis_c()+
+  labs(col="Inoculation dose\n(log10 cells)") +
+  xlab("Inoculant") + ylab("Health metric")
 gg_pilot_n2c3wcs
 ggsave(filename = "03_EDA_and_adj/gg_pilot_n2c3wcs.png", gg_pilot_n2c3wcs, width=5, height=3)
 
