@@ -413,19 +413,21 @@ gg_fullmodelpredictions_simp <- dat_ac %>%
   scale_x_continuous(breaks=seq(0,8,1)) +
   scale_y_continuous(breaks=c(0,0.25,0.5,0.75,1)) +
   ylab("Probability of healthy plant") +
-  xlab("N2C3 (pathogen) inoculation\ndose (log10(+1))") + labs(col="Protective inoculation\n dose (log10(+1))", title="Effect of inoculation dose on\nplant health outcome (against N2C3)") +
+  xlab("N2C3 (pathogen) inoculation\ndose (log10(+1))") + labs(col="Protective inoculation\n dose (log10(+1))"
+                                                               # , title="Effect of inoculation dose on\nplant health outcome (against N2C3)"
+                                                               ) +
   # scale_color_gradient(low="gold", high="darkseagreen4") +
   scale_color_manual(values=c(healthColRamp(6)))+
   theme_bw()
 # scale_color_manual(values=c(`3`="goldenrod", `4`="goldenrod4", `5`="brown", `6`="darkred", `7`="red"))
 gg_fullmodelpredictions_simp
-ggsave("04_ratio_experiment/gg_fullmodelpredictions_simp.png", gg_fullmodelpredictions_simp, height=3, width=7)
+ggsave("04_ratio_experiment/gg_fullmodelpredictions_simp.png", gg_fullmodelpredictions_simp, height=3, width=6)
 
 ## For monoculture
 range_totalcellslog <- seq(range(dat_ac %>% pull(protect_cells_log))[1], range(dat_ac$protect_cells_log)[2], length.out=100)
 
 brm_monocultures
-dat_ac_monocultures_nolacZ$total_cells_log
+
 newdat_expanded_mono <- dat_ac_monocultures_nolacZ%>%
   # filter(protect%in% c("WCS365","CHAO","CH267","PF5")) %>%
   mutate(Strain = factor(Strain, levels=c("MOCK","N2C3","WCS365","CHAO","CH267","PF5"))) %>%
@@ -441,26 +443,30 @@ newdat_expanded_mono <- dat_ac_monocultures_nolacZ%>%
 # Version where we have 95% prediction intervals
 mean_pred95_predict_mono <- t(apply(posterior_linpred(brm_monocultures, newdata = newdat_expanded_mono, allow_new_levels=TRUE, transform = TRUE), MARGIN = 2, function(x) c(mean=mean(x), Q2.5=as.numeric(quantile(x, 0.025)), Q97.5=as.numeric(quantile(x, 0.975)))))
 newdat_expanded_mono <- bind_cols(newdat_expanded_mono,mean_pred95_predict_mono)
+newdat_expanded_mono_forplot <- newdat_expanded_mono %>% filter(plant_age==5) %>%
+  rowwise() %>%
+  mutate(total_cells_log = ifelse(Strain=="MOCK",rnorm(1, 0, 0.7), total_cells_log ) ) %>% ungroup() %>%
+  filter((total_cells_log>2 & Strain !="MOCK") | Strain == "MOCK")
 
 gg_monomodelpredictions_simp <- dat_ac_monocultures_nolacZ %>%
-  filter(Strain!="MOCK") %>%
+  # filter(Strain!="MOCK") %>%
   filter(plant_age==5) %>%
   ggplot() +
   geom_jitter(aes(x=total_cells_log, y=Alive)
              , show.legend = FALSE, height=0.2, width=0
              , cex=0.1) +
-  geom_ribbon(data=newdat_expanded_mono %>% filter(plant_age==5), aes(x=(total_cells_log), ymin=Q2.5, ymax=Q97.5), alpha=0.25) +
-  geom_line(data=newdat_expanded_mono %>% filter(plant_age==5), aes(x=(total_cells_log), y=mean)) +
+  geom_ribbon(data=newdat_expanded_mono_forplot, aes(x=(total_cells_log), ymin=Q2.5, ymax=Q97.5), alpha=0.25) +
+  geom_line(data=newdat_expanded_mono_forplot, aes(x=(total_cells_log), y=mean)) +
   # scale_color_manual(values = c('5'="darkolivegreen1",`6` = "olivedrab3", `7`="darkolivegreen")) +
   # theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5)
   # )+
   facet_grid(.~Strain, scales="free", drop = TRUE, space="free"
              , labeller = labeller(plant_age = plant_age_labeller, `round(total_cells_log)`=N2C3_labeller
                                    ))+
-  scale_x_continuous(breaks=seq(0,8,1)) +
+  scale_x_continuous(breaks=c(0,3,4,5,6,7,8)) +
   scale_y_continuous(breaks=c(0,0.25,0.5,0.75,1)) +
   ylab("Probability of healthy plant") +
-  xlab("Inoculation dose (log10(+1))") + labs(title="Effect of inoculation dose on\nplant health outcome (monoculture)") +
+  xlab("Inoculation dose (log10(+1))") + 
   # scale_color_gradient(low="gold", high="darkseagreen4") +
   scale_color_manual(values=c(healthColRamp(6)))+
   theme_bw()
@@ -593,17 +599,24 @@ predictions_plantage <- bind_cols(newdat_plantage, mean_pred95_predict_plantage)
 
 gg_plantage_predictions <- predictions_plantage %>%
   ggplot() +
+  geom_point(data=dat_ac, aes(x=plant_age, y=Alive, group=path , col=path)
+             , position=position_jitterdodgev(jitter.height=0.1, jitter.width=0.5, dodge.height=-0.3)
+             , cex=0.1)+
+  # geom_jitter(data=dat_ac, aes(x=plant_age, y=as.numeric(Alive), col=path), width=0.25, height=0.1, cex=0.1) +
   geom_ribbon(aes(x=plant_age, ymin=Q2.5, ymax=Q97.5, fill=path), alpha=0.2)+
   geom_line(aes(x=plant_age, y=mean, col=path))+
-  facet_grid(.~ protect) +
+  facet_grid(.~ protect, labeller = labeller(protect=protect_labeller)) +
   scale_x_continuous(breaks=c(5,6,7))+
+  scale_y_continuous(breaks=c(0,0.5,1))+
   scale_color_manual(values=c(N2C3="darkorange", MOCK="black")) +
   scale_fill_manual(values=c(N2C3="darkorange", MOCK="black")) +
   xlab("Plant age (days)") +ylab("Probability of healthy plant") +
   labs(col="Pathogen added", fill="Pathogen added")+
+  theme_bw() +
   theme(legend.position = "top")
 gg_plantage_predictions
-ggsave("04_ratio_experiment/gg_plantage_predictions.png",gg_plantage_predictions, height=4, width=7)
+ggsave("04_ratio_experiment/gg_plantage_predictions.png",gg_plantage_predictions, height=3.5, width=7)
+
 
 # 
 # predictions_plantage %>%
@@ -627,16 +640,10 @@ print("\nplant age\n")
 fixef(brm_plantage)
 sink()
 
+#### Age and ratio panelled plot ####
 
-
-dat_ac %>%
-  group_by(protect, path, plant_age) %>%
-  reframe(propAlive = mean(Alive)) 
-
-dat_ac %>%
-  group_by(protect, path) %>%
-  reframe(propAlive = mean(Alive)) 
-
-dat_ac %>%
-  group_by(protect, ratio, plant_age) %>%
-  reframe(propAlive = mean(Alive)) 
+## Join with other
+gg_ratio_and_age_panelled <- plot_grid(gg_fullmodelpredictions_simp, gg_plantage_predictions+
+            theme(legend.position = "right"), nrow=2, align="v", axis="lr")
+gg_ratio_and_age_panelled
+ggsave(filename = "04_ratio_experiment/gg_ratio_and_age_panelled.png", gg_ratio_and_age_panelled, height=7, width=7)
