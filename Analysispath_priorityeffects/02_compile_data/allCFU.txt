@@ -1,0 +1,132 @@
+experiment	transfer_h	strain	fluor	plant	germ_plate	strain_number	abs_600	bio_rep	tech_rep	CFU	dilution	mL_plated	total_volume	CFU_mL	CFU_well
+2023-12_priorityeffects2	3	N2C3	neon	col0	NA	strain1	NA	3	A	11	1	0.005	0.5	22000	11000
+2023-12_priorityeffects2	3	N2C3	neon	col0	NA	strain1	NA	3	B	11	1	0.005	0.5	22000	11000
+2023-12_priorityeffects2	3	N2C3	neon	col0	NA	strain1	NA	3	C	9	1	0.005	0.5	18000	9000
+2023-12_priorityeffects2	3	N2C3	neon	col0	NA	strain1	NA	1	A	27	0	0.005	0.5	5400	2700
+2023-12_priorityeffects2	3	N2C3	neon	col0	NA	strain1	NA	1	B	28	0	0.005	0.5	5600	2800
+2023-12_priorityeffects2	3	N2C3	neon	col0	NA	strain1	NA	1	C	20	0	0.005	0.5	4000	2000
+2023-12_priorityeffects2	3	N2C3	neon	col0	NA	strain1	NA	2	A	32	0	0.005	0.5	6400	3200
+2023-12_priorityeffects2	3	N2C3	neon	col0	NA	strain1	NA	2	B	34	0	0.005	0.5	6800	3400
+2023-12_priorityeffects2	3	N2C3	neon	col0	NA	strain1	NA	2	C	34	0	0.005	0.5	6800	3400
+2023-12_priorityeffects2	3	WCS365	neon	col0	NA	strain1	NA	3	A	7	0	0.005	0.5	1400	700
+2023-12_priorityeffects2	3	WCS365	neon	col0	NA	strain1	NA	3	B	2	0	0.005	0.5	400	200
+2023-12_priorityeffects2	3	WCS365	neon	col0	NA	strain1	NA	3	C	3	0	0.005	0.5	600	300
+2023-12_priorityeffects2	3	WCS365	neon	col0	NA	strain1	NA	1	A	11	0	0.005	0.5	2200	1100
+2023-12_priorityeffects2	3	WCS365	neon	col0	NA	strain1	NA	1	B	11	0	0.005	0.5	2200	1100
+2023-12_priorityeffects2	3	WCS365	neon	col0	NA	strain1	NA	1	C	10	0	0.005	0.5	2000	1000
+2023-12_priorityeffects2	3	WCS365	neon	col0	NA	strain1	NA	2	A	3	0	0.005	0.5	600	300
+2023-12_priorityeffects2	3	WCS365	neon	col0	NA	strain1	NA	2	B	10	0	0.005	0.5	2000	1000
+2023-12_priorityeffects2	3	WCS365	neon	col0	NA	strain1	NA	2	C	10	0	0.005	0.5	2000	1000
+2023-12_priorityeffects2	6	N2C3	neon	col0	NA	strain1	NA	3	A	11	2	0.005	0.5	220000	110000
+2023-12_priorityeffects2	6	N2C3	neon	col0	NA	strain1	NA	3	B	11	2	0.005	0.5	220000	110000
+2023-12_priorityeffects2	6	N2C3	neon	col0	NA	strain1	NA	3	C	13	2	0.005	0.5	260000	130000
+2023-12_priorityeffects2	6	N2C3	neon	col0	NA	strain1	NA	1	A	23	2	0.005	0.5	460000	230000
+2023-12_priorityeffects2	6	N2C3	neon	col0	NA	strain1	NA	1	B	16	2	0.005	0.5	320000	160000
+2023-12_priorityeffects2	6	N2C3	neon	col0	NA	strain1	NA	2	A	13	2	0.005	0.5	260000	130000
+2023-12_priorityeffects2	6	N2C3	neon	col0	NA	strain1	NA	2	B	15	2	0.005	0.5	300000	150000
+2023-12_priorityeffects2	6	N2C3	neon	col0	NA	strain1	NA	2	C	15	2	0.005	0.5	300000	150000
+2023-12_priorityeffects2	6	WCS365	neon	col0	NA	strain1	NA	3	A	7	2	0.005	0.5	140000	70000
+2023-12_priorityeffects2	6	WCS365	neon	col0	NA	strain1	NA	3	B	4	2	0.005	0.5	80000	40000
+2023-12_priorityeffects2	6	WCS365	neon	col0	NA	strain1	NA	3	C	3	2	0.005	0.5	60000	30000
+2023-12_priorityeffects2	6	WCS365	neon	col0	NA	strain1	NA	1	A	7	2	0.005	0.5	140000	70000
+2023-12_priorityeffects2	6	WCS365	neon	col0	NA	strain1	NA	1	B	9	2	0.005	0.5	180000	90000
+2023-12_priorityeffects2	6	WCS365	neon	col0	NA	strain1	NA	1	C	4	2	0.005	0.5	80000	40000
+2023-12_priorityeffects2	6	WCS365	neon	col0	NA	strain1	NA	2	A	9	2	0.005	0.5	180000	90000
+2023-12_priorityeffects2	6	WCS365	neon	col0	NA	strain1	NA	2	B	8	2	0.005	0.5	160000	80000
+2023-12_priorityeffects2	6	WCS365	neon	col0	NA	strain1	NA	2	C	8	2	0.005	0.5	160000	80000
+2023-12_priorityeffects2	24	N2C3	neon	col0	NA	strain1	NA	3	A	65	3	0.01	0.5	6500000	3250000
+2023-12_priorityeffects2	24	N2C3	neon	col0	NA	strain1	NA	3	B	72	3	0.01	0.5	7200000	3600000
+2023-12_priorityeffects2	24	N2C3	neon	col0	NA	strain1	NA	3	C	64	3	0.01	0.5	6400000	3200000
+2023-12_priorityeffects2	24	N2C3	neon	col0	NA	strain1	NA	1	A	49	3	0.01	0.5	4900000	2450000
+2023-12_priorityeffects2	24	N2C3	neon	col0	NA	strain1	NA	1	B	46	3	0.01	0.5	4600000	2300000
+2023-12_priorityeffects2	24	N2C3	neon	col0	NA	strain1	NA	1	C	56	3	0.01	0.5	5600000	2800000
+2023-12_priorityeffects2	24	N2C3	neon	col0	NA	strain1	NA	2	A	43	3	0.01	0.5	4300000	2150000
+2023-12_priorityeffects2	24	N2C3	neon	col0	NA	strain1	NA	2	B	47	3	0.01	0.5	4700000	2350000
+2023-12_priorityeffects2	24	N2C3	neon	col0	NA	strain1	NA	2	C	56	3	0.01	0.5	5600000	2800000
+2023-12_priorityeffects2	24	WCS365	neon	col0	NA	strain1	NA	3	A	86	2	0.01	0.5	860000	430000
+2023-12_priorityeffects2	24	WCS365	neon	col0	NA	strain1	NA	3	B	86	2	0.01	0.5	860000	430000
+2023-12_priorityeffects2	24	WCS365	neon	col0	NA	strain1	NA	3	C	85	2	0.01	0.5	850000	425000
+2023-12_priorityeffects2	24	WCS365	neon	col0	NA	strain1	NA	1	A	61	2	0.01	0.5	610000	305000
+2023-12_priorityeffects2	24	WCS365	neon	col0	NA	strain1	NA	1	B	67	2	0.01	0.5	670000	335000
+2023-12_priorityeffects2	24	WCS365	neon	col0	NA	strain1	NA	1	C	61	2	0.01	0.5	610000	305000
+2023-12_priorityeffects2	24	WCS365	neon	col0	NA	strain1	NA	2	A	47	2	0.01	0.5	470000	235000
+2023-12_priorityeffects2	24	WCS365	neon	col0	NA	strain1	NA	2	B	41	2	0.01	0.5	410000	205000
+2023-12_priorityeffects2	24	WCS365	neon	col0	NA	strain1	NA	2	C	50	2	0.01	0.5	500000	250000
+2024-02_Peffect_Trial4	6	WCS365	neon	col0		strain 1	NA	1	A	47	-1	0.005	0.5	94000	47000
+2024-02_Peffect_Trial4	6	WCS365	neon	col0		strain 1	NA	1	B	51	-1	0.005	0.5	102000	51000
+2024-02_Peffect_Trial4	6	WCS365	neon	col0		strain 1	NA	1	C	43	-1	0.005	0.5	86000	43000
+2024-02_Peffect_Trial4	6	WCS365	neon	col0		strain 1	NA	2	A	52	-1	0.005	0.5	104000	52000
+2024-02_Peffect_Trial4	6	WCS365	neon	col0		strain 1	NA	2	B	47	-1	0.005	0.5	94000	47000
+2024-02_Peffect_Trial4	6	WCS365	neon	col0		strain 1	NA	2	C	66	-1	0.005	0.5	132000	66000
+2024-02_Peffect_Trial4	6	WCS365	neon	col0		strain 1	NA	3	A	49	-1	0.005	0.5	98000	49000
+2024-02_Peffect_Trial4	6	WCS365	neon	col0		strain 1	NA	3	B	63	-1	0.005	0.5	126000	63000
+2024-02_Peffect_Trial4	6	WCS365	neon	col0		strain 1	NA	3	C	58	-1	0.005	0.5	116000	58000
+2024-02_Peffect_Trial4	6	N2C3	crim	col0		strain 1	NA	1	A	29	-2	0.005	0.5	580000	290000
+2024-02_Peffect_Trial4	6	N2C3	crim	col0		strain 1	NA	1	B	27	-2	0.005	0.5	540000	270000
+2024-02_Peffect_Trial4	6	N2C3	crim	col0		strain 1	NA	1	C	23	-2	0.005	0.5	460000	230000
+2024-02_Peffect_Trial4	6	N2C3	crim	col0		strain 1	NA	2	A	34	-2	0.005	0.5	680000	340000
+2024-02_Peffect_Trial4	6	N2C3	crim	col0		strain 1	NA	2	B	35	-2	0.005	0.5	700000	350000
+2024-02_Peffect_Trial4	6	N2C3	crim	col0		strain 1	NA	2	C	30	-2	0.005	0.5	600000	300000
+2024-02_Peffect_Trial4	6	N2C3	crim	col0		strain 1	NA	3	A	43	-2	0.005	0.5	860000	430000
+2024-02_Peffect_Trial4	6	N2C3	crim	col0		strain 1	NA	3	B	35	-2	0.005	0.5	700000	350000
+2024-02_Peffect_Trial4	6	N2C3	crim	col0		strain 1	NA	3	C	33	-2	0.005	0.5	660000	330000
+2024-02_Peffect_Trial4	6	N2C3	crim	overnight		strain 2	0.01	1	A	83	-3	0.005	0.275	16600000	4565000
+2024-02_Peffect_Trial4	6	N2C3	crim	overnight		strain 2	0.01	1	B	84	-3	0.005	0.275	16800000	4620000
+2024-02_Peffect_Trial4	6	N2C3	crim	overnight		strain 2	0.01	1	C	66	-3	0.005	0.275	13200000	3630000
+2024-02_Peffect_Trial4	6	N2C3	crim	overnight		strain 2	0.03	1	A	48	-4	0.005	0.275	96000000	26400000
+2024-02_Peffect_Trial4	6	N2C3	crim	overnight		strain 2	0.03	1	B	42	-4	0.005	0.275	84000000	23100000
+2024-02_Peffect_Trial4	6	N2C3	crim	overnight		strain 2	0.03	1	C	51	-4	0.005	0.275	102000000	28050000
+2024-02_Peffect_Trial4	6	N2C3	crim	overnight		strain 2	0.001	1	A	60	-3	0.005	0.275	12000000	3300000
+2024-02_Peffect_Trial4	6	N2C3	crim	overnight		strain 2	0.001	1	B	66	-3	0.005	0.275	13200000	3630000
+2024-02_Peffect_Trial4	6	N2C3	crim	overnight		strain 2	0.001	1	C	53	-3	0.005	0.275	10600000	2915000
+2024-02_Peffect_Trial4	6	WCS365	neon	overnight		strain 2	0.001	1	A	30	-3	0.005	0.275	6000000	1650000
+2024-02_Peffect_Trial4	6	WCS365	neon	overnight		strain 2	0.001	1	B	25	-3	0.005	0.275	5000000	1375000
+2024-02_Peffect_Trial4	6	WCS365	neon	overnight		strain 2	0.001	1	C	35	-3	0.005	0.275	7000000	1925000
+2024-02_Peffect_Trial4	6	WCS365	neon	overnight		strain 2	0.01	1	A	49	-3	0.005	0.275	9800000	2695000
+2024-02_Peffect_Trial4	6	WCS365	neon	overnight		strain 2	0.01	1	B	45	-3	0.005	0.275	9000000	2475000
+2024-02_Peffect_Trial4	6	WCS365	neon	overnight		strain 2	0.01	1	C	44	-3	0.005	0.275	8800000	2420000
+2024-02_Peffect_Trial4	6	WCS365	neon	overnight		strain 2	0.03	1	A	20	-4	0.005	0.275	40000000	11000000
+2024-02_Peffect_Trial4	6	WCS365	neon	overnight		strain 2	0.03	1	B	21	-4	0.005	0.275	42000000	11550000
+2024-02_Peffect_Trial4	6	WCS365	neon	overnight		strain 2	0.03	1	C	20	-4	0.005	0.275	40000000	11000000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	A	strain 1	NA	1	A	19	-3	0.005	0.5	3800000	1900000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	A	strain 1	NA	1	B	16	-3	0.005	0.5	3200000	1600000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	A	strain 1	NA	1	C	19	-3	0.005	0.5	3800000	1900000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	A	strain 1	NA	2	A	43	-2	0.005	0.5	860000	430000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	A	strain 1	NA	2	B	32	-2	0.005	0.5	640000	320000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	A	strain 1	NA	2	C	38	-2	0.005	0.5	760000	380000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	A	strain 1	NA	3	A	9	-3	0.005	0.5	1800000	900000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	A	strain 1	NA	3	B	11	-3	0.005	0.5	2200000	1100000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	A	strain 1	NA	3	C	12	-3	0.005	0.5	2400000	1200000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	B	strain 1	NA	4	A	11	-3	0.005	0.5	2200000	1100000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	B	strain 1	NA	4	B	4	-3	0.005	0.5	800000	400000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	B	strain 1	NA	4	C	11	-3	0.005	0.5	2200000	1100000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	B	strain 1	NA	5	A	20	-3	0.005	0.5	4000000	2000000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	B	strain 1	NA	5	B	26	-3	0.005	0.5	5200000	2600000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	B	strain 1	NA	5	C	18	-3	0.005	0.5	3600000	1800000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	B	strain 1	NA	6	A	15	-3	0.005	0.5	3000000	1500000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	B	strain 1	NA	6	B	16	-3	0.005	0.5	3200000	1600000
+2024-02_Peffect_Trial4	24	N2C3	crim	col0	B	strain 1	NA	6	C	15	-3	0.005	0.5	3000000	1500000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	A	strain 1	NA	1	A	50	-2	0.005	0.5	1000000	500000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	A	strain 1	NA	1	B	49	-2	0.005	0.5	980000	490000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	A	strain 1	NA	1	C	56	-2	0.005	0.5	1120000	560000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	A	strain 1	NA	2	A	33	-2	0.005	0.5	660000	330000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	A	strain 1	NA	2	B	32	-2	0.005	0.5	640000	320000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	A	strain 1	NA	2	C	42	-2	0.005	0.5	840000	420000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	A	strain 1	NA	3	A	14	-3	0.005	0.5	2800000	1400000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	A	strain 1	NA	3	B	11	-3	0.005	0.5	2200000	1100000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	A	strain 1	NA	3	C	19	-3	0.005	0.5	3800000	1900000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	B	strain 1	NA	4	A	12	-3	0.005	0.5	2400000	1200000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	B	strain 1	NA	4	B	13	-3	0.005	0.5	2600000	1300000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	B	strain 1	NA	4	C	15	-3	0.005	0.5	3000000	1500000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	B	strain 1	NA	5	A	52	-2	0.005	0.5	1040000	520000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	B	strain 1	NA	5	B	60	-2	0.005	0.5	1200000	600000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	B	strain 1	NA	5	C	52	-2	0.005	0.5	1040000	520000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	B	strain 1	NA	6	A	21	-3	0.005	0.5	4200000	2100000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	B	strain 1	NA	6	B	10	-3	0.005	0.5	2000000	1000000
+2024-02_Peffect_Trial4	24	WCS365	neon	col0	B	strain 1	NA	6	C	14	-3	0.005	0.5	2800000	1400000
+2024-02_Peffect_Trial4	24	N2C3	crim	overnight		strain 2	0.001	1	A	15	-3	0.005	0.275	3000000	825000
+2024-02_Peffect_Trial4	24	N2C3	crim	overnight		strain 2	0.001	1	B	11	-3	0.005	0.275	2200000	605000
+2024-02_Peffect_Trial4	24	N2C3	crim	overnight		strain 2	0.001	1	C	6	-3	0.005	0.275	1200000	330000
+2024-02_Peffect_Trial4	24	WCS365	neon	overnight		strain 2	0.001	1	A	45	-2	0.005	0.275	900000	247500
+2024-02_Peffect_Trial4	24	WCS365	neon	overnight		strain 2	0.001	1	B	53	-2	0.005	0.275	1060000	291500
+2024-02_Peffect_Trial4	24	WCS365	neon	overnight		strain 2	0.001	1	C	47	-2	0.005	0.275	940000	258500
