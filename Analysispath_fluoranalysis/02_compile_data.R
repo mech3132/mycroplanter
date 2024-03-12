@@ -22,9 +22,6 @@ for ( m in meta_filenames) {
 allMeta  <- filter(allMeta, !is.na(plate))
 
 
-
-
-
 #### Load in all pixel data ####
 allPixelDir <- list.dirs("00_raw_data/dat/pixel_data")[list.dirs("00_raw_data/dat/pixel_data")!="00_raw_data/dat/pixel_data"]
 # Above, the list.dirs returns the original directory ("00_raw_data/dat/pixel_data") so I just remove that by removing the index where the value equals that path
@@ -43,9 +40,6 @@ for (p in allPixelDir) {
 # remove subimage == NA
 allPixel <- filter(allPixel, !is.na(subimage))
 
-
-
-
 #### Load in all fluorescence data ####
 # Get fluor file names
 fluor_filenames <- list.files("00_raw_data/dat/fluor_data/")
@@ -57,12 +51,6 @@ for ( f in fluor_filenames) {
 }
 # remove all lines where plate is NA
 allFluor  <- filter(allFluor, !is.na(plate_alias))
-
-######## Get fluorescence standard curves ############
-# Before, I was converting by standard curves, but now we're using the constant method so I'm not doing that anymore
-# allConv <- read.delim("01_standard_curve/conversion_models.txt")
-# allConv_bg <- read.delim("01_standard_curve/conversion_models_bg.txt")
-
 
 ####### Adjust files and process/add additional info ############
 # Conversion for OD/abs to cells #
@@ -84,6 +72,7 @@ allMeta_adj <- allMeta %>%
   separate(protect, into= c("protect","other"), sep="-") %>%
   separate(other, into= c("lacZ_protect","fluor_protect"), sep="_") %>% 
   mutate(lacZ_protect=ifelse(lacZ_protect=="",NA,lacZ_protect),fluor_protect=ifelse(fluor_protect=="",NA,fluor_protect))%>%
+  # make factors for protect and path; make strainmix treatments
   mutate(col=factor(col, levels=c(seq(1,12)))
          , protect = factor(protect, levels=c("MOCK","WCS365")) # Factors make it so MOCK is automatically first when running models or making plots (default is alphabetical)
          , path = factor(path, levels=c("MOCK","N2C3"))) %>%
@@ -100,7 +89,6 @@ allMeta_adj <- allMeta %>%
          , ratio_path = ifelse(is.infinite(ratio_path), 1, 
                                ifelse(is.na(ratio_path), 0, ratio_path))) %>%
   mutate(ratio = paste0(c(ratio_protect, ratio_path), collapse = "-")) %>% # category of ratios used
-  # mutate(ratio_adj = paste0(c(ratio_protect, ratio_path_adj), collapse = "-")) %>%
   ungroup() %>% # undoes the "rowwise" command
   # Below, we calculate the number of cells (and log of number of cells)
   mutate(protect_cells = protect_od*cells_per_Abs1,
@@ -250,7 +238,6 @@ allDat_raw <- allDat %>%
 
 ######### PROCESS ################
 
-
 allDat_raw %>%
   filter(StrainMix=="MOCK-MOCK") %>%
   select(experiment, crim_raw, neon_raw, fluor_protect) %>%
@@ -289,42 +276,25 @@ contaminated_blanks <-  allDat_raw %>%
   unite(experiment, plate, row, col, col=UniqueID) %>%
   select(UniqueID) %>% pull() %>% c(man_remove) %>% unique()
 
-# ## Don't need this anymore; no longer converting with standard curves
-# allConv_wide <- allConv %>%
-#   pivot_wider(names_from=fluor, values_from = c(od_conv_slope, od_conv_intercept) ) %>%
-#   filter(experiment != "allLog10_winter") %>%
-#   rename(stcurve= experiment) %>%
-#   mutate(fc_cn = log2(od_conv_slope_crim/od_conv_slope_neon)) %>%
-#   mutate(MS=0.5, MES=0.5)
-# 
-# allConv_bg_wide <- allConv_bg %>%
-#   filter(version=="winter") %>%
-#   pivot_wider(names_from = fluor, values_from=c("bg_conv_intercept","bg_conv_slope"))%>%
-#   mutate(MS=0.5, MES=0.5)
 
 allDat_raw_adj <- allDat_raw %>%
   full_join(blank_values) %>%
-  # full_join(allConv_wide, relationship = "many-to-many") %>%
-  # full_join(allConv_bg_wide) %>%
   unite(experiment, plate, row, col, col=UniqueID, remove=FALSE) %>%
   filter(!UniqueID %in% contaminated_blanks) %>%
   mutate(crim_raw_blanked = crim_raw -crim_raw_blanks
-         , neon_raw_blanked = neon_raw-neon_raw_blanks) %>%
-  # Since not using standard curves, don't need to adjust with blanked neon values. Commenting out all below
-  # mutate(neon_raw_blanked_adj = neon_raw_blanked-(crim_raw_blanked*bg_conv_slope_neon+bg_conv_intercept_neon)) %>%
-  # mutate(crim_estAbs = (crim_raw_blanked-od_conv_intercept_crim)/od_conv_slope_crim
-         # , neon_estAbs = (neon_raw_blanked_adj-od_conv_intercept_neon)/od_conv_slope_neon) %>%
-  # mutate(ratio_cn_fluor = crim_raw_blanked/neon_raw_blanked_adj
+         , neon_raw_blanked = neon_raw - neon_raw_blanks) %>%
+  ## New! Manualling making fluor a count of 1 to crimson and neon negative values-- so we can keep all our data
+  mutate(crim_raw_blanked = ifelse(crim_raw_blanked<=0, 1,crim_raw_blanked)
+         ,neon_raw_blanked = ifelse(neon_raw_blanked<=0, 1,neon_raw_blanked) ) %>%
+  # Calculate crimson neon ratios
          mutate(ratio_cn_fluor = crim_raw_blanked/neon_raw_blanked
-                # , ratio_cn_estAbs = crim_estAbs/neon_estAbs
                 ) %>%
   # Log 2 fold change for crim vs neon
   mutate(CN_FC_fluor = log2(ratio_cn_fluor)
-         # ,CN_FC_estAbs = log2(ratio_cn_estAbs)
          ) %>%
   ### Calculate CFU for those that have it
   rowwise() %>%
-  # Below: calculated actualy CFU ratios
+  # Below: calculated actual CFU ratios
   mutate(ratio_cn_CFU = crim_CFU/neon_CFU) %>%
   mutate(CN_FC_CFU = log2(ratio_cn_CFU)) 
 
@@ -556,34 +526,6 @@ dat_5
 #   ggplot() +
 #   geom_point(aes(x=WN_FC_CFU, y=WN_FC_estAbs, pch=fluor_protect, col=stcurve)) 
 
-
-#### Let's take a peak at final data
-dat_wn_fluor %>%
-  filter(is.finite(WN_FC_fluor_offset)) %>%
-  select(ratio,WN_FC_fluor_offset,Healthiness_hsv, StrainMix  ) %>% distinct() %>%
-  mutate(Alive = Healthiness_hsv>400) %>%
-  ggplot(aes(x=ratio, y=WN_FC_fluor_offset)) +
-  geom_boxplot() +
-  geom_jitter(aes(col=Alive), width=0.1, height=0) +
-  facet_grid(.~StrainMix, drop=TRUE, scales="free_x", space = "free")+
-  scale_color_manual(values=c("orange","darkgreen")) +
-  geom_hline(aes(yintercept=0)) +
-  xlab("Inoculation Ratio (WCS:N2C3)") +
-  ylab("LogFold change (WCS:N2C3)")
-
-## Okay, so offset average doesn't seem to work too well for different strains...?
-dat_12 %>%
-  filter(is.finite(NN_FC_fluor_offset)) %>%
-  select(ratio,NN_FC_fluor_offset,Healthiness_hsv, StrainMix,fluor_protect  ) %>% distinct() %>%
-  ggplot(aes(x=ratio, y=NN_FC_fluor_offset)) +
-  geom_boxplot() +
-  geom_jitter(aes(col=fluor_protect), width=0.1, height=0, alpha=0.5) +
-  facet_grid(.~StrainMix, drop=TRUE, scales="free_x", space = "free")+
-  xlab("Inoculation Ratio\n(N2C3 (Strain 1):N2C3 (Strain2))") +
-  geom_hline(aes(yintercept=0)) +
-  scale_color_manual(values=c("orange","darkgreen")) +
-  labs(col="Fluor of N2C3\nStrain1") +
-  ylab("LogFold change (N1 : N2)")
 
 dat_n2c3_vs_n2c3_col0 <- dat_12 %>%
   filter(plant=="col0") 

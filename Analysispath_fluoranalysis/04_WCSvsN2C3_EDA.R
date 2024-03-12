@@ -9,7 +9,9 @@ dir.create("04_WCSvsN2C3_EDA")
 
 dat <- read.delim("02_compile_data/dat_wcs_vs_n2c3.txt") %>%
   mutate(Alive = (Healthiness_hsv>400)) %>%
-  mutate(WN_FC_inoc = log10(protect_cells/path_cells)) 
+  mutate(WN_FC_inoc = log10(protect_cells/path_cells)) %>%
+  # THIS IS TO REMOVE CASES WHERE ONE FLUOR WAS NEGATIVE
+  mutate(WN_FC_fluor_offset_nozeros = ifelse(crim_raw_blanked==1 | neon_raw_blanked==1, NA, WN_FC_fluor_offset))
 N2C3_labeller <- c(`0`="No N2C3", `2`="N2C3 ~ 10^2 cells", `3`="N2C3 ~ 10^3 cells", `4`="N2C3 ~ 10^4 cells", `5`="N2C3 ~ 10^5 cells",`6`="N2C3 ~ 10^6 cells", `7`="N2C3 ~ 10^7 cells", `8`="N2C3 ~ 10^8 cells")
 
 ##### Plate maps #########
@@ -24,7 +26,7 @@ gg_platemap_fluor <- dat %>%
   geom_tile(aes(x=col, y=row, fill=protect, alpha=protect_cells_log)) +
   geom_point(aes(x=col, y=row, cex=CFU_ratios_withNAs)) +
   geom_point(aes(x=col, y=row, col=path, alpha=path_cells_log)) +
-  scale_fill_manual(values=c(MOCK="grey", WCS365 = "darkgreen"))  +
+  scale_fill_manual(values=c(MOCK="grey", WCS365 = "darkseagreen4"))  +
   scale_color_manual(values=c(MOCK="white", N2C3 = "darkorange"))  +
   facet_wrap(experiment~plate) +
   labs(col="Pathogen", fill="Commensal", alpha = "Cells (log10)", size="CFU counted") +
@@ -68,7 +70,7 @@ gg_plant_sanitycheck <- dat %>%
   geom_tile(aes(x=col, y=row, fill=Healthiness_hsv)) +
   geom_point(aes(x=col, y=row, col=fluor_ratios_withNAs))+
   scale_fill_gradient(low="grey", high="darkgreen")  +
-  scale_color_gradient2(low="darkorange", mid="white", high="green", na.value = "black")  +
+  scale_color_gradient2(low="darkorange", mid="white", high="darkseagreen4", na.value = "black")  +
   facet_wrap(experiment~plate) +
   labs(col="Log2 FC\nfluor", fill="Health Score") +
   ylab("Row") + xlab("Column")
@@ -158,41 +160,43 @@ ggsave("04_WCSvsN2C3_EDA/gg_wcs_vs_cellcounts_byexp_nottransformed.png", gg_wcs_
 
 
 ############# Health vs log2foldratios #############
-
-gg_ratios_fluor  <- dat %>%
-  filter(is.finite(WN_FC_fluor_offset)) %>%
-  # filter(protect =="WCS365") %>%
-  ggplot(aes(x=ratio, y=WN_FC_fluor_offset)) +
-  geom_boxplot() +
-  geom_jitter(aes(col=fluor_protect), width=0.1, height=0, alpha=0.5) +
-  facet_grid(.~StrainMix, drop=TRUE, scales="free_x", space = "free") +
-  xlab("Inoculation Ratio\n WCS365:N2C3") +
-  geom_hline(aes(yintercept=0)) +
-  scale_color_manual(values=c("orange","darkgreen")) +
-  labs(col="Fluor of\nWCS365") +
-  ylab("Log2Fold change (WCS365 : N2C3)")
-gg_ratios_fluor
-ggsave("04_WCSvsN2C3_EDA/gg_ratios_fluor.png", gg_ratios_fluor, width=10, height=4)
-
-
-gg_ratios_fluor_wplanthealth  <- dat %>%
-  filter(is.finite(WN_FC_fluor_offset)) %>%
-  # filter(protect =="WCS365") %>%
-  ggplot(aes(x=ratio, y=WN_FC_fluor_offset)) +
-  geom_boxplot() +
-  geom_jitter(aes(col=Healthiness_hsv), width=0.1, height=0, alpha=0.5) +
-  facet_grid(.~StrainMix, drop=TRUE, scales="free_x", space = "free") +
-  xlab("Inoculation Ratio\n WCS365:N2C3") +
-  geom_hline(aes(yintercept=0)) +
-  scale_color_gradient(low="yellow", high="darkgreen") +
-  labs(col="Health score") +
-  ylab("Log2Fold change (WCS365 : N2C3)")
-gg_ratios_fluor_wplanthealth
-ggsave("04_WCSvsN2C3_EDA/gg_ratios_fluor_wplanthealth.png", gg_ratios_fluor_wplanthealth, width=10, height=4)
-
+# 
+# gg_ratios_fluor  <- dat %>%
+#   filter(is.finite(WN_FC_fluor_offset)) %>%
+#   # filter(protect =="WCS365") %>%
+#   ggplot(aes(x=ratio, y=WN_FC_fluor_offset)) +
+#   geom_boxplot() +
+#   geom_jitter(aes(col=fluor_protect), width=0.1, height=0, alpha=0.5) +
+#   facet_grid(.~StrainMix, drop=TRUE, scales="free_x", space = "free") +
+#   xlab("Inoculation Ratio\n WCS365:N2C3") +
+#   geom_hline(aes(yintercept=0)) +
+#   scale_color_manual(values=c("orange","green")) +
+#   labs(col="Fluor of\nWCS365") +
+#   ylab("Log2Fold change (WCS365 : N2C3)")
+# gg_ratios_fluor
+# ggsave("04_WCSvsN2C3_EDA/gg_ratios_fluor.png", gg_ratios_fluor, width=10, height=4)
+# 
+# 
+# gg_ratios_fluor_wplanthealth  <- dat %>%
+#   filter(is.finite(WN_FC_fluor_offset)) %>%
+#   # filter(protect =="WCS365") %>%
+#   ggplot(aes(x=ratio, y=WN_FC_fluor_offset)) +
+#   geom_boxplot() +
+#   geom_jitter(aes(col=Healthiness_hsv), width=0.1, height=0, alpha=0.5) +
+#   facet_grid(.~StrainMix, drop=TRUE, scales="free_x", space = "free") +
+#   xlab("Inoculation Ratio\n WCS365:N2C3") +
+#   geom_hline(aes(yintercept=0)) +
+#   scale_color_gradient(low="yellow3", high="darkgreen") +
+#   labs(col="Health score") +
+#   ylab("Log2Fold change (WCS365 : N2C3)")
+# gg_ratios_fluor_wplanthealth
+# ggsave("04_WCSvsN2C3_EDA/gg_ratios_fluor_wplanthealth.png", gg_ratios_fluor_wplanthealth, width=10, height=4)
+dat %>%
+  filter(is.na(WN_FC_fluor_offset_nozeros)) %>%
+  select(StrainMix) %>% table()
 
 gg_ratios_fluor_wplantbin  <- dat %>%
-  filter(is.finite(WN_FC_fluor_offset)) %>%
+  # filter(!is.na(WN_FC_fluor_offset_nozeros)) %>%
   # mutate(Alive = Healthiness_hsv>400) %>%
   # filter(protect =="WCS365") %>%
   ggplot(aes(x=ratio, y=WN_FC_fluor_offset)) +
@@ -201,32 +205,111 @@ gg_ratios_fluor_wplantbin  <- dat %>%
   facet_grid(.~StrainMix, drop=TRUE, scales="free_x", space = "free") +
   xlab("Inoculation Ratio\n WCS365:N2C3") +
   geom_hline(aes(yintercept=0)) +
-  scale_color_manual(values=c("orange","darkgreen")) +
+  scale_color_manual(values=c("yellow3","darkgreen")) +
   labs(col="Healthy plant\n(>400)") +
-  ylab("Log2Fold change (WCS365 : N2C3)")
+  ylab("WCS365:N2C3\n(Log2 fold change fluorescence)")
 gg_ratios_fluor_wplantbin
 ggsave("04_WCSvsN2C3_EDA/gg_ratios_fluor_wplantbin.png", gg_ratios_fluor_wplantbin, width=10, height=4)
 
 ### Plots for pub ####
-gg_ratios_fluor_mixtreats  <- dat %>%
-  filter(is.finite(WN_FC_fluor_offset)) %>%
-  filter(StrainMix == "WCS365-N2C3") %>%
-  # mutate(Alive = Healthiness_hsv>400) %>%
-  # filter(protect =="WCS365") %>%
+emptyDat <- dat %>% filter(StrainMix %in% c("WCS365-N2C3")) %>%select(ratio) %>%
+  distinct() %>%
+  mutate(WN_FC_fluor_offset = NA)
+
+dat_for_pubplots <- dat %>%
+  mutate(fluortype = ifelse(!is.na(WN_FC_fluor_offset_nozeros),"Both strains\ndetected",
+                            ifelse(WN_FC_fluor_offset>0,"N2C3 not\ndetected", "WCS365 not\ndetected"))) %>%
+  mutate(fluortype = factor(fluortype, levels = c("N2C3 not\ndetected", "Both strains\ndetected", "WCS365 not\ndetected"))) %>%
+  mutate(WN_FC_fluor_offset = ifelse(is.na(WN_FC_fluor_offset_nozeros),0,WN_FC_fluor_offset_nozeros)) %>%
+  filter(StrainMix == "WCS365-N2C3") 
+  
+
+gg_ratios_mix_simp_main  <-  dat_for_pubplots%>%
+  filter(fluortype == "Both strains\ndetected") %>%
   ggplot(aes(x=ratio, y=WN_FC_fluor_offset)) +
   geom_boxplot() +
   geom_jitter(aes(col=Alive), width=0.1, height=0, alpha=0.5) +
-  facet_grid(.~StrainMix, drop=TRUE, scales="free_x", space = "free", 
+  facet_grid(fluortype~., drop=TRUE, scales="free") +
+  xlab("") +
+  geom_hline(aes(yintercept=0)) +
+  scale_color_manual(values=c("yellow3","darkgreen")) +
+  labs(col="Healthy plant\n(>400)") +
+  theme_bw()+
+  theme( axis.text.x = element_blank(), axis.ticks.x = element_blank()
+         , plot.margin = unit(c(0,3,0,3), unit="cm")
+  ) +
+  ylab("WCS365:N2C3\n(Log2 fold change\nfluorescence) ") 
+# ylim(-15, 15) # make even on top and bottom
+gg_ratios_mix_simp_main
+# TOP
+gg_ratios_mix_simp_top  <- dat_for_pubplots %>%
+  filter(fluortype == "N2C3 not\ndetected") %>%
+  full_join(emptyDat %>% mutate(fluortype = "N2C3 not\ndetected")) %>%
+  ggplot(aes(x=ratio, y=WN_FC_fluor_offset)) +
+  geom_jitter(aes(col=Alive), width=0.1, height=0.1, alpha=0.5, show.legend = FALSE) +
+  facet_grid(fluortype~., drop=TRUE) +
+  xlab("Inoculation Ratio\n WCS365:N2C3") +
+  scale_color_manual(values=c("yellow3","darkgreen")) +
+  scale_x_discrete(position="top") +
+  labs(col="Healthy plant\n(>400)") +
+  theme_bw()+
+  theme( axis.text.y = element_blank(), axis.ticks.y = element_blank()
+         , plot.margin = unit(c(0,3,0,3), unit="cm")
+  )+
+         ylab("") + xlab("")
+gg_ratios_mix_simp_top
+# BOTTOM
+gg_ratios_mix_simp_btm  <- dat_for_pubplots %>%
+  filter(fluortype == "WCS365 not\ndetected") %>%
+  full_join(emptyDat %>% mutate(fluortype = "WCS365 not\ndetected")) %>%
+  ggplot(aes(x=ratio, y=WN_FC_fluor_offset)) +
+  geom_jitter(aes(col=Alive), width=0.1, height=0.1, alpha=0.5, show.legend = FALSE) +
+  facet_grid(fluortype~., drop=TRUE) +
+  xlab("Inoculation Ratio\n WCS365:N2C3") +
+  scale_color_manual(values=c("yellow3","darkgreen")) +
+  labs(col="Healthy plant\n(>400)") +
+  theme_bw()+
+  theme( axis.text.y = element_blank(), axis.ticks.y = element_blank()
+         , plot.margin = unit(c(0,3,0,3), unit="cm")
+  ) +
+  ylab("") + xlab("Inoculation Ratio\nWCS365:N2C3\n")
+gg_ratios_mix_simp_btm
+
+gg_ratios_mix_simp_ALLDAT <- plot_grid(gg_ratios_mix_simp_top, gg_ratios_mix_simp_main, gg_ratios_mix_simp_btm,nrow=3, align="hv", axis = "lr"
+          , rel_heights = c(3,5,3), scale=1.2
+          )
+gg_ratios_mix_simp_ALLDAT
+
+ggsave("04_WCSvsN2C3_EDA/gg_ratios_mix_simp_ALLDAT.png", gg_ratios_mix_simp_ALLDAT, height=5.75, width=6.5)
+# ggsave("04_WCSvsN2C3_EDA/gg_ratios_mix_simp_ALLDAT.png", gg_ratios_mix_simp_ALLDAT, height=5, width=7)
+
+
+## No individually
+gg_ratios_mix_simp  <- dat %>%
+  mutate(fluortype = ifelse(!is.na(WN_FC_fluor_offset_nozeros),"Both strains detected",
+         ifelse(WN_FC_fluor_offset>0,"N2C3 not detected", "WCS365 not detected"))) %>%
+  mutate(fluortype = factor(fluortype, levels = c("N2C3 not detected", "Both strains detected", "WCS365 not detected"))) %>%
+  mutate(WN_FC_fluor_offset = ifelse(is.na(WN_FC_fluor_offset_nozeros),0,WN_FC_fluor_offset_nozeros)) %>%
+  # filter(is.finite(WN_FC_fluor_offset)) %>%
+  filter(StrainMix == "WCS365-N2C3") %>%
+  # mutate(Alive = Healthiness_hsv>400) %>%
+  # filter(protect =="WCS365") %>%
+  filter(fluortype == "Both strains detected") %>%
+  ggplot(aes(x=ratio, y=WN_FC_fluor_offset)) +
+  geom_boxplot() +
+  geom_jitter(aes(col=Alive), width=0.1, height=0, alpha=0.5) +
+  facet_grid(fluortype~StrainMix, drop=TRUE, scales="free",
              labeller=labeller(StrainMix=c("WCS365-N2C3"="Mixed inoculation treatments"))) +
   xlab("Inoculation Ratio\n WCS365:N2C3") +
   geom_hline(aes(yintercept=0)) +
-  scale_color_manual(values=c("orange","darkgreen")) +
+  scale_color_manual(values=c("yellow3","darkgreen")) +
   labs(col="Healthy plant\n(>400)") +
-  ylab("Log2Fold change (WCS365 : N2C3)") +
-  ylim(-15, 15) # make even on top and bottom
-gg_ratios_fluor_mixtreats
+  ylab("WCS365:N2C3\n(Log2 fold change fluorescence) ") 
+  # ylim(-15, 15) # make even on top and bottom
+gg_ratios_mix_simp
+ggsave("04_WCSvsN2C3_EDA/gg_ratios_mix_simp.png", gg_ratios_mix_simp, height=4, width=6)
 
-gg_ratios_fluor_monotreats  <- dat %>%
+gg_ratios_mono_simp  <- dat %>%
   filter(is.finite(WN_FC_fluor_offset)) %>%
   filter(StrainMix != "WCS365-N2C3") %>%
   mutate(StrainMix2 = ifelse(StrainMix=="MOCK-MOCK", "MOCK",
@@ -238,143 +321,145 @@ gg_ratios_fluor_monotreats  <- dat %>%
   facet_grid(.~NewCat, drop=TRUE, scales="free_x", space = "free") +
   # xlab("Inoculation Ratio\n WCS365:N2C3") +
   geom_hline(aes(yintercept=0)) +
-  scale_color_manual(values=c("orange","darkgreen")) +
+  scale_color_manual(values=c("yellow3","darkgreen")) +
   labs(col="Healthy plant\n(>400)") +
   ylab("Dominant strain\naccording to fluorescence ratio") + xlab("Treatment")
-gg_ratios_fluor_monotreats
+gg_ratios_mono_simp
+ggsave("04_WCSvsN2C3_EDA/gg_ratios_mono_simp.png", gg_ratios_mono_simp, height=4, width=6)
 
-gg_ratios_flour_forpub <- plot_grid(gg_ratios_fluor_monotreats, gg_ratios_fluor_mixtreats, align = "h"
+
+gg_ratios_flour_forpub <- plot_grid(gg_ratios_mono_simp, gg_ratios_mix_simp, align = "h"
                                     , rel_widths = c(3,5))
 gg_ratios_flour_forpub
-ggsave("04_WCSvsN2C3_EDA/gg_ratios_flour_forpub.png", gg_ratios_flour_forpub, width=8, height=4)
+ggsave("04_WCSvsN2C3_EDA/gg_ratios_monoandmix_simp.png", gg_ratios_flour_forpub, width=8, height=4)
 
 
 ### Other plots ####
-gg_allFluor_simple <- dat %>%
-  filter(is.finite(WN_FC_fluor_offset)) %>%
-  mutate(Controls=ifelse(protect=="MOCK" | path=="MOCK", "No strains / single strains", "Both strains")) %>%
-  ggplot(aes(x=WN_FC_fluor_offset, y=Healthiness_hsv, group=ratio, col=ratio)) +
-  geom_point(aes(pch=ratio)) +
-  scale_shape_manual(values=c("0-0"=3, "0-1"=16, "1-0"=21,"1-1"=8,"1-100"=17,"1-10000"=15,"100-1"=24,"10000-1"=22))+
-  scale_color_manual(values=c("0-0"="black", "0-1"="red", "1-0"="blue","1-1"="darkgrey","1-100"="orange","1-10000"="brown","100-1"="lightblue","10000-1"="darkblue"))+
-  # geom_smooth(method="lm", se=FALSE)+
-  geom_hline(aes(yintercept=400), lty=2)+geom_vline(aes(xintercept=0), lty=2) +
-  facet_grid(.~Controls)+
-  ylab("Health Score") + xlab("Log2 Fold-change (WCS365:N2C3)")+
-  labs(col="Ratio (WCS365:N2C3)",pch="Ratio (WCS365:N2C3)")
-gg_allFluor_simple
-ggsave("04_WCSvsN2C3_EDA/gg_allFluor_simple.png", gg_allFluor_simple, width=8, height=4)
+# gg_allFluor_simple <- dat %>%
+#   filter(is.finite(WN_FC_fluor_offset)) %>%
+#   mutate(Controls=ifelse(protect=="MOCK" | path=="MOCK", "No strains / single strains", "Both strains")) %>%
+#   ggplot(aes(x=WN_FC_fluor_offset, y=Healthiness_hsv, group=ratio, col=ratio)) +
+#   geom_point(aes(pch=ratio)) +
+#   scale_shape_manual(values=c("0-0"=3, "0-1"=16, "1-0"=21,"1-1"=8,"1-100"=17,"1-10000"=15,"100-1"=24,"10000-1"=22))+
+#   scale_color_manual(values=c("0-0"="black", "0-1"="red", "1-0"="blue","1-1"="darkgrey","1-100"="orange","1-10000"="brown","100-1"="lightblue","10000-1"="darkblue"))+
+#   # geom_smooth(method="lm", se=FALSE)+
+#   geom_hline(aes(yintercept=400), lty=2)+geom_vline(aes(xintercept=0), lty=2) +
+#   facet_grid(.~Controls)+
+#   ylab("Health Score") + xlab("Log2 Fold-change (WCS365:N2C3)")+
+#   labs(col="Ratio (WCS365:N2C3)",pch="Ratio (WCS365:N2C3)")
+# gg_allFluor_simple
+# ggsave("04_WCSvsN2C3_EDA/gg_allFluor_simple.png", gg_allFluor_simple, width=8, height=4)
+# 
+# gg_allFluor_simple_bin <- dat %>%
+#   filter(is.finite(WN_FC_fluor_offset)) %>%
+#   mutate(Aliven=as.numeric(Alive)) %>%
+#   mutate(Controls=ifelse(protect=="MOCK" | path=="MOCK", "No strains / single strains", "Both strains")) %>%
+#   ggplot(aes(x=WN_FC_fluor_offset, y=Aliven)) +
+#   geom_point(aes(pch=ratio, group=ratio, col=ratio)) +
+#   geom_smooth(method="glm", method.args=c(family="binomial"), col="black") +
+#   scale_shape_manual(values=c("0-0"=3, "0-1"=16, "1-0"=21,"1-1"=8,"1-100"=17,"1-10000"=15,"100-1"=24,"10000-1"=22))+
+#   scale_color_manual(values=c("0-0"="black", "0-1"="red", "1-0"="blue","1-1"="darkgrey","1-100"="orange","1-10000"="brown","100-1"="lightblue","10000-1"="darkblue"))+
+#   # geom_smooth(method="lm", se=FALSE)+
+#   # geom_hline(aes(yintercept=400), lty=2)+
+#   geom_vline(aes(xintercept=0), lty=2) +
+#   facet_grid(.~Controls)+
+#   ylab("Probability of healthy plant") + xlab("Log2 Fold-change (WCS365:N2C3)")+
+#   labs(col="Ratio (WCS365:N2C3)",pch="Ratio (WCS365:N2C3)")
+# gg_allFluor_simple_bin
+# ggsave("04_WCSvsN2C3_EDA/gg_allFluor_simple_bin.png", gg_allFluor_simple_bin, width=8, height=4)
 
-gg_allFluor_simple_bin <- dat %>%
-  filter(is.finite(WN_FC_fluor_offset)) %>%
-  mutate(Aliven=as.numeric(Alive)) %>%
-  mutate(Controls=ifelse(protect=="MOCK" | path=="MOCK", "No strains / single strains", "Both strains")) %>%
-  ggplot(aes(x=WN_FC_fluor_offset, y=Aliven)) +
-  geom_point(aes(pch=ratio, group=ratio, col=ratio)) +
-  geom_smooth(method="glm", method.args=c(family="binomial"), col="black") +
-  scale_shape_manual(values=c("0-0"=3, "0-1"=16, "1-0"=21,"1-1"=8,"1-100"=17,"1-10000"=15,"100-1"=24,"10000-1"=22))+
-  scale_color_manual(values=c("0-0"="black", "0-1"="red", "1-0"="blue","1-1"="darkgrey","1-100"="orange","1-10000"="brown","100-1"="lightblue","10000-1"="darkblue"))+
-  # geom_smooth(method="lm", se=FALSE)+
-  # geom_hline(aes(yintercept=400), lty=2)+
-  geom_vline(aes(xintercept=0), lty=2) +
-  facet_grid(.~Controls)+
-  ylab("Probability of healthy plant") + xlab("Log2 Fold-change (WCS365:N2C3)")+
-  labs(col="Ratio (WCS365:N2C3)",pch="Ratio (WCS365:N2C3)")
-gg_allFluor_simple_bin
-ggsave("04_WCSvsN2C3_EDA/gg_allFluor_simple_bin.png", gg_allFluor_simple_bin, width=8, height=4)
+# 
+# gg_allFluor_data_cells <- dat %>%
+#   # filter(StrainMix !="MOCK-MOCK") %>%
+#   mutate(inoc_ratios = log10(protect_od/path_od)) %>%
+#   # select(inoc_ratios) %>% unique()
+#   mutate(inoc_ratios = ifelse(is.na(inoc_ratios), "No bacteria"
+#                               , ifelse(inoc_ratios == -Inf, "No WCS365"
+#                                        , ifelse(inoc_ratios==Inf, "No N2C3", inoc_ratios)))) %>%
+#   mutate(inoc_ratios = factor(inoc_ratios, levels=c("No bacteria","No WCS365", "-4","-2","0","2","4","No N2C3"))) %>%
+#   ggplot(aes(x=WN_FC_fluor_offset, y=Healthiness_hsv)) +
+#   geom_point(aes(fill=factor(inoc_ratios)),pch=21, col="black") +
+#   geom_smooth(aes(group=factor(inoc_ratios), col=factor(inoc_ratios)), method="lm", show.legend = FALSE, se=FALSE)+
+#   geom_vline(aes(xintercept=0))+
+#   geom_hline(aes(yintercept=400))  +
+#   facet_grid(.~round(path_cells_log),  labeller = labeller(`round(path_cells_log)` = N2C3_labeller)) +
+#   ylab("Health Score") +
+#   xlab("WCS365:N2C3 Log2 Fold Change\n(positive = WCS365 more abundant)\nat END of experiment") +
+#   labs(fill="Log10 Fold difference\n of Inoculation ratio\nWCS365:N2C3\nat START of experiment") +
+#   scale_fill_manual(values=c("darkgrey","brown","darkorange","yellow","black","lightblue","blue","darkblue"))+
+#   scale_color_manual(values=c("darkgrey","brown","darkorange","yellow","black","lightblue","blue","darkblue"))
+# gg_allFluor_data_cells
+# ggsave("04_WCSvsN2C3_EDA/gg_allFluor_data_cells.png", gg_allFluor_data_cells, width=15, height=4)
+# 
+# gg_allFluor_data_cells_bin <- dat %>%
+#   mutate(Aliven=as.numeric(Alive)) %>%
+#   # filter(StrainMix !="MOCK-MOCK") %>%
+#   mutate(inoc_ratios = log10(protect_od/path_od)) %>%
+#   # select(inoc_ratios) %>% unique()
+#   mutate(inoc_ratios = ifelse(is.na(inoc_ratios), "No bacteria"
+#                               , ifelse(inoc_ratios == -Inf, "No WCS365"
+#                                        , ifelse(inoc_ratios==Inf, "No N2C3", inoc_ratios)))) %>%
+#   mutate(inoc_ratios = factor(inoc_ratios, levels=c("No bacteria","No WCS365", "-4","-2","0","2","4","No N2C3"))) %>%
+#   ggplot(aes(x=WN_FC_fluor_offset, y=Aliven)) +
+#   geom_jitter(aes(fill=factor(inoc_ratios)),pch=21, col="black", height=0.1, width=0) +
+#   geom_smooth( method="glm", show.legend = FALSE, method.args=c(family="binomial"), col="black")+
+#   geom_vline(aes(xintercept=0))+
+#   # geom_hline(aes(yintercept=400))  +
+#   facet_grid(.~round(path_cells_log),  labeller = labeller(`round(path_cells_log)` = N2C3_labeller)) +
+#   ylab("Probability of healthy plant") +
+#   xlab("WCS365:N2C3 Log2 Fold Change\n(positive = WCS365 more abundant)\nat END of experiment") +
+#   labs(fill="Log10 Fold difference\n of Inoculation ratio\nWCS365:N2C3\nat START of experiment") +
+#   scale_fill_manual(values=c("darkgrey","brown","darkorange","yellow","black","lightblue","blue","darkblue"))+
+#   scale_color_manual(values=c("darkgrey","brown","darkorange","yellow","black","lightblue","blue","darkblue"))
+# gg_allFluor_data_cells_bin
+# ggsave("04_WCSvsN2C3_EDA/gg_allFluor_data_cells_bin.png", gg_allFluor_data_cells_bin, width=15, height=4)
 
-
-gg_allFluor_data_cells <- dat %>%
-  # filter(StrainMix !="MOCK-MOCK") %>%
-  mutate(inoc_ratios = log10(protect_od/path_od)) %>%
-  # select(inoc_ratios) %>% unique()
-  mutate(inoc_ratios = ifelse(is.na(inoc_ratios), "No bacteria"
-                              , ifelse(inoc_ratios == -Inf, "No WCS365"
-                                       , ifelse(inoc_ratios==Inf, "No N2C3", inoc_ratios)))) %>%
-  mutate(inoc_ratios = factor(inoc_ratios, levels=c("No bacteria","No WCS365", "-4","-2","0","2","4","No N2C3"))) %>%
-  ggplot(aes(x=WN_FC_fluor_offset, y=Healthiness_hsv)) +
-  geom_point(aes(fill=factor(inoc_ratios)),pch=21, col="black") +
-  geom_smooth(aes(group=factor(inoc_ratios), col=factor(inoc_ratios)), method="lm", show.legend = FALSE, se=FALSE)+
-  geom_vline(aes(xintercept=0))+
-  geom_hline(aes(yintercept=400))  +
-  facet_grid(.~round(path_cells_log),  labeller = labeller(`round(path_cells_log)` = N2C3_labeller)) +
-  ylab("Health Score") +
-  xlab("WCS365:N2C3 Log2 Fold Change\n(positive = WCS365 more abundant)\nat END of experiment") +
-  labs(fill="Log10 Fold difference\n of Inoculation ratio\nWCS365:N2C3\nat START of experiment") +
-  scale_fill_manual(values=c("darkgrey","brown","darkorange","yellow","black","lightblue","blue","darkblue"))+
-  scale_color_manual(values=c("darkgrey","brown","darkorange","yellow","black","lightblue","blue","darkblue"))
-gg_allFluor_data_cells
-ggsave("04_WCSvsN2C3_EDA/gg_allFluor_data_cells.png", gg_allFluor_data_cells, width=15, height=4)
-
-gg_allFluor_data_cells_bin <- dat %>%
-  mutate(Aliven=as.numeric(Alive)) %>%
-  # filter(StrainMix !="MOCK-MOCK") %>%
-  mutate(inoc_ratios = log10(protect_od/path_od)) %>%
-  # select(inoc_ratios) %>% unique()
-  mutate(inoc_ratios = ifelse(is.na(inoc_ratios), "No bacteria"
-                              , ifelse(inoc_ratios == -Inf, "No WCS365"
-                                       , ifelse(inoc_ratios==Inf, "No N2C3", inoc_ratios)))) %>%
-  mutate(inoc_ratios = factor(inoc_ratios, levels=c("No bacteria","No WCS365", "-4","-2","0","2","4","No N2C3"))) %>%
-  ggplot(aes(x=WN_FC_fluor_offset, y=Aliven)) +
-  geom_jitter(aes(fill=factor(inoc_ratios)),pch=21, col="black", height=0.1, width=0) +
-  geom_smooth( method="glm", show.legend = FALSE, method.args=c(family="binomial"), col="black")+
-  geom_vline(aes(xintercept=0))+
-  # geom_hline(aes(yintercept=400))  +
-  facet_grid(.~round(path_cells_log),  labeller = labeller(`round(path_cells_log)` = N2C3_labeller)) +
-  ylab("Probability of healthy plant") +
-  xlab("WCS365:N2C3 Log2 Fold Change\n(positive = WCS365 more abundant)\nat END of experiment") +
-  labs(fill="Log10 Fold difference\n of Inoculation ratio\nWCS365:N2C3\nat START of experiment") +
-  scale_fill_manual(values=c("darkgrey","brown","darkorange","yellow","black","lightblue","blue","darkblue"))+
-  scale_color_manual(values=c("darkgrey","brown","darkorange","yellow","black","lightblue","blue","darkblue"))
-gg_allFluor_data_cells_bin
-ggsave("04_WCSvsN2C3_EDA/gg_allFluor_data_cells_bin.png", gg_allFluor_data_cells_bin, width=15, height=4)
-
-
-gg_11ratio_only <- dat %>%
-  filter(StrainMix == "WCS365-N2C3") %>%
-  filter(ratio=="1-1") %>%
-  ggplot(aes(x=WN_FC_fluor_offset, y=Healthiness_hsv)) +
-  geom_point() +
-  geom_smooth(method="lm") +
-  facet_grid(.~path_od, labeller = labeller(path_od=c(`1e-06`="Each strain inoculation\nAbsorbance=1e-06", `1e-04`="Each strain inoculation\nAbsorbance=1e-04", `0.01`="Each strain inoculation\nAbsorbance=1e-02"))) +
-  xlab("Log2 fold-change (WCS365:N2C3)") + ylab("Health Score") +
-  geom_hline(aes(yintercept=400), lty=2) + geom_vline(aes(xintercept=0), lty=2)+
-  labs(title="Total inoculation absorbance (WCS365+N2C3)")
-gg_11ratio_only
-ggsave("04_WCSvsN2C3_EDA/gg_11ratio_only.png", gg_11ratio_only, height=4, width=6)
-
-gg_11ratio_only_bin <- dat %>%
-  mutate(Aliven=as.numeric(Alive)) %>%
-  filter(StrainMix == "WCS365-N2C3") %>%
-  filter(ratio=="1-1") %>%
-  ggplot(aes(x=WN_FC_fluor_offset, y=Aliven)) +
-  geom_point() +
-  geom_smooth(method="glm", method.args=c(family="binomial")) +
-  facet_grid(.~path_od, labeller = labeller(path_od=c(`1e-06`="Each strain inoculation\nAbsorbance=1e-06", `1e-04`="Each strain inoculation\nAbsorbance=1e-04", `0.01`="Each strain inoculation\nAbsorbance=1e-02"))) +
-  xlab("Log2 fold-change (WCS365:N2C3)") + ylab("Probability of healthy plant") +
-  # geom_hline(aes(yintercept=400), lty=2) +
-  geom_vline(aes(xintercept=0), lty=2)+
-  labs(title="Total inoculation absorbance (WCS365+N2C3)")
-gg_11ratio_only_bin
-ggsave("04_WCSvsN2C3_EDA/gg_11ratio_only_bin.png", gg_11ratio_only_bin, height=4, width=6)
-
-
-gg_11ratio_only_bin_collapsed <- dat %>%
-  mutate(Aliven=as.numeric(Alive)) %>%
-  filter(StrainMix == "WCS365-N2C3") %>%
-  filter(ratio=="1-1") %>%
-  ggplot(aes(x=WN_FC_fluor_offset, y=Aliven)) +
-  geom_jitter(aes(group=factor(round(path_cells_log)), col=factor(round(path_cells_log))), height=0.1, width=0) +
-  geom_smooth(method="glm", method.args=c(family="binomial"), col="black") +
-  geom_smooth(aes(group=factor(round(path_cells_log)), col=factor(round(path_cells_log))), method="glm", method.args=c(family="binomial"), se=FALSE) +
-  # facet_grid(.~path_od, labeller = labeller(path_od=c(`1e-06`="Each strain inoculation\nAbsorbance=1e-06", `1e-04`="Each strain inoculation\nAbsorbance=1e-04", `0.01`="Each strain inoculation\nAbsorbance=1e-02"))) +
-  xlab("Log2 fold-change (WCS365:N2C3)") + ylab("Probability of healthy plant") +
-  # geom_hline(aes(yintercept=400), lty=2) +
-  geom_vline(aes(xintercept=0), lty=2)+
-  ylim(0,1) + labs(col="Number of cells (each)\n(log10)")+
-  scale_color_manual(values=c("lightgreen","forestgreen","darkgreen"))
-gg_11ratio_only_bin_collapsed
-ggsave("04_WCSvsN2C3_EDA/gg_11ratio_only_bin_collapsed.png", gg_11ratio_only_bin_collapsed, height=4, width=6)
+# 
+# gg_11ratio_only <- dat %>%
+#   filter(StrainMix == "WCS365-N2C3") %>%
+#   filter(ratio=="1-1") %>%
+#   ggplot(aes(x=WN_FC_fluor_offset, y=Healthiness_hsv)) +
+#   geom_point() +
+#   geom_smooth(method="lm") +
+#   facet_grid(.~path_od, labeller = labeller(path_od=c(`1e-06`="Each strain inoculation\nAbsorbance=1e-06", `1e-04`="Each strain inoculation\nAbsorbance=1e-04", `0.01`="Each strain inoculation\nAbsorbance=1e-02"))) +
+#   xlab("Log2 fold-change (WCS365:N2C3)") + ylab("Health Score") +
+#   geom_hline(aes(yintercept=400), lty=2) + geom_vline(aes(xintercept=0), lty=2)+
+#   labs(title="Total inoculation absorbance (WCS365+N2C3)")
+# gg_11ratio_only
+# ggsave("04_WCSvsN2C3_EDA/gg_11ratio_only.png", gg_11ratio_only, height=4, width=6)
+# 
+# gg_11ratio_only_bin <- dat %>%
+#   mutate(Aliven=as.numeric(Alive)) %>%
+#   filter(StrainMix == "WCS365-N2C3") %>%
+#   filter(ratio=="1-1") %>%
+#   ggplot(aes(x=WN_FC_fluor_offset, y=Aliven)) +
+#   geom_point() +
+#   geom_smooth(method="glm", method.args=c(family="binomial")) +
+#   facet_grid(.~path_od, labeller = labeller(path_od=c(`1e-06`="Each strain inoculation\nAbsorbance=1e-06", `1e-04`="Each strain inoculation\nAbsorbance=1e-04", `0.01`="Each strain inoculation\nAbsorbance=1e-02"))) +
+#   xlab("Log2 fold-change (WCS365:N2C3)") + ylab("Probability of healthy plant") +
+#   # geom_hline(aes(yintercept=400), lty=2) +
+#   geom_vline(aes(xintercept=0), lty=2)+
+#   labs(title="Total inoculation absorbance (WCS365+N2C3)")
+# gg_11ratio_only_bin
+# ggsave("04_WCSvsN2C3_EDA/gg_11ratio_only_bin.png", gg_11ratio_only_bin, height=4, width=6)
+# 
+# 
+# gg_11ratio_only_bin_collapsed <- dat %>%
+#   mutate(Aliven=as.numeric(Alive)) %>%
+#   filter(StrainMix == "WCS365-N2C3") %>%
+#   filter(ratio=="1-1") %>%
+#   ggplot(aes(x=WN_FC_fluor_offset, y=Aliven)) +
+#   geom_jitter(aes(group=factor(round(path_cells_log)), col=factor(round(path_cells_log))), height=0.1, width=0) +
+#   geom_smooth(method="glm", method.args=c(family="binomial"), col="black") +
+#   geom_smooth(aes(group=factor(round(path_cells_log)), col=factor(round(path_cells_log))), method="glm", method.args=c(family="binomial"), se=FALSE) +
+#   # facet_grid(.~path_od, labeller = labeller(path_od=c(`1e-06`="Each strain inoculation\nAbsorbance=1e-06", `1e-04`="Each strain inoculation\nAbsorbance=1e-04", `0.01`="Each strain inoculation\nAbsorbance=1e-02"))) +
+#   xlab("Log2 fold-change (WCS365:N2C3)") + ylab("Probability of healthy plant") +
+#   # geom_hline(aes(yintercept=400), lty=2) +
+#   geom_vline(aes(xintercept=0), lty=2)+
+#   ylim(0,1) + labs(col="Number of cells (each)\n(log10)")+
+#   scale_color_manual(values=c("lightgreen","forestgreen","darkgreen"))
+# gg_11ratio_only_bin_collapsed
+# ggsave("04_WCSvsN2C3_EDA/gg_11ratio_only_bin_collapsed.png", gg_11ratio_only_bin_collapsed, height=4, width=6)
 
 ############# BRMS #############
 
@@ -450,17 +535,18 @@ gg_brmsfit_fluor_health <- dat_wfluorbrm %>%
   geom_ribbon(aes(x=WN_FC_fluor_offset, ymin=Q2.5, ymax=Q97.5, fill=ribbongroups, group=ribbongroups), alpha=0.25, show.legend = FALSE) +
   # scale_shape_manual(values=c("0-0"=3, "0-1"=16, "1-0"=21,"1-1"=8,"1-100"=17,"1-10000"=15,"100-1"=24,"10000-1"=22))+
   # scale_shape_manual(values=c(`3.5`=10, `5.2`=19, `5.5`=21, `7.2`=4, `7.5`=8)) +
-  scale_color_manual(values=c("0-0"="black", "1-1"="darkgrey","1-100"="orange","1-10000"="darkorange4","100-1"="green","10000-1"="darkgreen"))+
+  scale_color_manual(values=c("0-0"="black", "1-1"="darkgrey","1-100"="orange","1-10000"="darkorange4","100-1"="darkseagreen2","10000-1"="darkseagreen4"))+
   scale_fill_manual(values=c("5.5_1-1"="darkgrey","3.5_1-1"="darkgrey","7.5_1-1"="darkgrey"
                              ,"7.2_1-100"="orange","5.2_1-100"="orange"
                              ,"7.2_1-10000"="darkorange4","5.2_1-10000"="darkorange4"
-                             ,"7.2_100-1"="green","5.2_100-1"="green"
-                             ,"7.2_10000-1"="darkgreen","5.2_10000-1"="darkgreen"))+
+                             ,"7.2_100-1"="darkseagreen2","5.2_100-1"="darkseagreen2"
+                             ,"7.2_10000-1"="darkseagreen4","5.2_10000-1"="darkseagreen4"))+
   scale_linetype_manual(values=c(`3.5`=3, `5.2`=4, `5.5`=6, `7.2`=5, `7.5`=1)) +
     # facet_grid(WN_FC_inoc~.)+
-  ylab("Probability of healthy plant") + xlab("Log2 Fold-change fluorescence (WCS365:N2C3)")+
-  labs(col="Ratio (WCS365:N2C3)", lty = "Total cells inoculated\n(log10)") +
-  ylim(0,1) +xlim(-15,15)
+  ylab("Probability of healthy plant") + xlab("WCS365:N2C3 (Log2 fold change fluorescence)")+
+  labs(col="Inoculation ratio\n(WCS365:N2C3)", lty = "Total cells inoculated\n(log10)") +
+  ylim(0,1) +xlim(-15,15)+
+  theme_bw()
 gg_brmsfit_fluor_health
 ggsave(filename="04_WCSvsN2C3_EDA/gg_brmsfit_fluor_health.png", gg_brmsfit_fluor_health, height=4, width=7)
 
