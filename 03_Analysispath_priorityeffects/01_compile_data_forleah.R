@@ -121,6 +121,7 @@ allHSV <- t(apply(allRGB, 1, function(x) rgb2hsv(r=x[1],g=x[2],b=x[3])))
 colnames(allHSV) <- c("hue","saturation","value")
 allPixel <- cbind(allPixel, allHSV)
 # Adjust the pixel data
+
 allPixel_adj <- allPixel %>% 
   # The subimage name is the experiment__plate__well, so we're going to separate that out
   separate(subimage, into = c("remove","well"), remove=TRUE, sep="_") %>% select(-remove) %>%
@@ -141,8 +142,9 @@ allFluor_adj <- allFluor %>%
 
 
 ##### JOIN and check #####
-allDat <- full_join(allMeta_adj,allPixel_adj) %>%
-  full_join(allFluor_adj) %>% 
+
+allDat <- full_join(allMeta_adj,allPixel_adj) %>% 
+  full_join(allFluor_adj) %>%
   unite(experiment, plate, well, col="UniqueID", sep="__", remove=FALSE)
 
 ### Platecheck 
@@ -185,22 +187,6 @@ gg_platemap_2 <- allDat %>%
   scale_fill_manual(values=c(MOCK="grey", WCS365="darkgreen", N2C3="orange"), na.value = "white")+
   scale_color_manual(values=c(MOCK="white", WCS365="darkgreen", N2C3="orange"), na.value = "black")
 gg_platemap_2
-
-gg_platemap_dd <- allDat %>%
-  filter(experiment=="2024-02-14_doubledip") %>%
-  # select(plate, row, col, strain1, strain2,Healthiness_hsv,crim_btm, neon_btm ) %>% View()
-  # select(plate) %>% table()
-  # select(plate, row, col, strain1, strain2, ) %>%
-  # View()
-  # filter(plant !="NOPLANT") %>%
-  mutate(row=factor(row, levels=rev(sort(unique(row))))) %>%
-  ggplot() +
-  geom_tile(aes(x=col, y=(row), fill=strain1)) +
-  geom_point(aes(x=col, y=(row), col=strain2)) +
-  facet_grid(.~plate)+
-  scale_fill_manual(values=c(MOCK="grey", WCS365="darkgreen", N2C3="orange"), na.value = "white")+
-  scale_color_manual(values=c(MOCK="white", WCS365="darkgreen", N2C3="orange"), na.value = "black")
-gg_platemap_dd
 
 ## Visual check of all fluorescence
 ### ALL first strains were neon
@@ -307,12 +293,14 @@ allDat %>%
   geom_density(aes(x=pix_b_median), fill=NA, col="blue")
 # The values where pixels are close to zero (<50) are actually wells that don't have plants in them (cross-checked)
 # Filter so that all green pixels > 100, and red pixels must be >50
+
 allDat_raw <- allDat %>%
   filter((pix_g_median>100| pix_r_median>50))
 
 ##### Split dataset into halves #######
 
 #### Top vs Bottom ####
+
 allDat_raw %>%
   ggplot() +
   geom_point(aes(x=log10(crim_top), y=log10(crim_btm)), col="darkred") +
@@ -403,6 +391,8 @@ allDat_raw_adj <- allDat_raw %>%
   mutate(
     ratio_cn_fluor = crim_raw_blanked/neon_raw_blanked ## TRY THIS-- they are deleting a lot of stuff accidentally if you adjust for bg fluor
   ) %>%
+  # If values are negative, remove final ratio
+  rowwise() %>%mutate(ratio_cn_fluor = ifelse(crim_raw_blanked<0 | neon_raw_blanked<0, NA, ratio_cn_fluor)) %>% ungroup() %>%
   # Log 2 fold change for crim vs neon
   mutate(CN_FC_fluor = log2(ratio_cn_fluor)
          , CN_FC_fluor_offset = CN_FC_fluor -fluor_offset) %>%
@@ -488,7 +478,7 @@ gg_ratio_planthealth_exp2 <- dat_plant %>%
   geom_jitter(aes(col=Alive, pch=experiment), width=0.1, height=0) +
   facet_grid(.~transfer_h, scales = "free", drop=TRUE, space="free_x"
              , labeller = labeller(transfer_h=c(`0`="Simultaneous Inoc",`0.01`="Dip", `3`="3h apart", `6`="6h apart",  `24`="24h apart", `48`="48h apart"))) +
-  scale_shape_manual(values=c(15,19))+
+  # scale_shape_manual(values=c(15,19))+
   scale_color_manual(values=c(`TRUE`="green", `FALSE` = "orange")) +
   geom_hline(aes(yintercept=0)) +
   ylab("WCS365 : N2C3\n Log2 Fold change")+xlab("Firsttrain-SecondStrain") +
@@ -511,7 +501,7 @@ gg_ratio_planthealth_exp5 <- dat_plant %>%
   geom_jitter(aes(col=Healthiness_hsv, pch=experiment), width=0.1, height=0) +
   facet_grid(experiment~StrainMix, scales = "free", drop=TRUE, space="free_x"
              , labeller = labeller(transfer_h=c(`0`="Simultaneous Inoc",`0.01`="Dip", `3`="3h apart", `6`="6h apart",  `24`="24h apart", `48`="48h apart"))) +
-  scale_shape_manual(values=c(15,19))+
+  # scale_shape_manual(values=c(15,19))+
   # scale_color_manual(values=c(`TRUE`="green", `FALSE` = "orange")) +
   # scale_color_manual(values=c("grey","yellow","green","darkgreen","blue")) +
   scale_color_gradient(low="yellow", high="darkgreen") +
@@ -536,7 +526,7 @@ save(dat_plant, file="01_compile_data_forleah/dat_plant.RData")
 write.table(dat_plant, file="01_compile_data_forleah/dat_plant.RData", sep="\t", row.names = FALSE, quote=FALSE)
 
 ###
-gg_doubledip <- allDat_final %>% filter(experiment == "2024-02-14_doubledip") %>%
+gg_doubledip <- allDat_final %>% filter(Type=="doubledip") %>%
   filter(plant=="col0") %>%
   mutate(StrainMix2 = ifelse(is.na(strain2_od), gsub("-.*$","",StrainMix), StrainMix)) %>%
   mutate(StrainMixsimple = ifelse(StrainMix == "MOCK-MOCK", "MOCK"

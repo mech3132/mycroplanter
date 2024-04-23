@@ -20,8 +20,9 @@ for ( m in meta_filenames) {
 }
 # remove all lines where plate is NA
 allMeta  <- filter(allMeta, !is.na(plate))  %>% 
-  select(-readtime) %>% # remove readtime bc of merging issues
-  unite(row, col, col="well", remove=FALSE, sep="") # make a manual well column
+  # select(-readtime) %>% # remove readtime bc of merging issues
+  unite(row, col, col="well", remove=FALSE, sep="") %>% # make a manual well column
+  mutate(plant_quality = ifelse(is.na(plant_quality)|plant_quality=="", "good", plant_quality))
 
 #### Load in all pixel data ####
 allPixelDir <- list.dirs("00_raw_data/dat/pixel_data")[list.dirs("00_raw_data/dat/pixel_data")!="00_raw_data/dat/pixel_data"]
@@ -65,7 +66,8 @@ for ( f in cfu_filenames) {
   allCFU <- full_join(allCFU, tempCFU)
 }
 # remove all lines where plate is NA
-allCFU  <- filter(allCFU, !is.na(experiment)) 
+allCFU  <- filter(allCFU, !is.na(experiment)) %>%
+  mutate(plant_quality = ifelse(is.na(plant_quality)|plant_quality=="", "good", plant_quality))
 
 ######## Get fluorescence offset ############
 lm_offset <- read.delim("../Analysispath_fluoranalysis/02_compile_data/offest_average.txt")
@@ -117,6 +119,9 @@ allMeta_adj  <- allMeta %>%
          total_cells_log = log10(total_cells+1)) %>%
   mutate(plant_age = date_inoc - date_germ) # Plant age at inoculation
 
+allMeta_adj %>%
+  select(strain1, strain2) %>% table()
+
 # Optionally, we can manually view the new data frame like this:
 # View(allMeta_adj)
 allMeta_adj %>%
@@ -152,16 +157,18 @@ allDat <- full_join(allMeta_adj,allPixel_adj) %>%
   full_join(allFluor_adj) %>% 
   unite(experiment, plate, well, col="UniqueID", sep="__", remove=FALSE) %>%
   filter(readtime !=3)
+allDat %>%
+  select(strain1, strain2) %>% table()
+
 ### REMOVE THINGS THAT I KNOW ARE WRONG ###
 allDat <- allDat %>%
-  filter(strain2_od !=0.002) %>%
-  rowwise() %>%
+  filter(strain2_od !=0.002) %>% rowwise() %>%
   mutate(remove = ifelse(length(grep("Strain 2 was innoculated incorectly", notes))>0, FALSE, TRUE)) %>% ungroup() %>%
   filter(remove) %>% select(-remove)
 
 ### Platecheck 
 allDat %>%
-  filter(experiment=="2023-12_priorityeffects") %>%
+  # filter(experiment=="2023-12_priorityeffects") %>%
   # filter(plant !="NOPLANT") %>%
   mutate(row=factor(row, levels=rev(sort(unique(row))))) %>%
   ggplot() +
@@ -216,7 +223,6 @@ gg_platemap_3 <- allDat %>%
   scale_color_manual(values=c(MOCK="white", WCS365="darkgreen", N2C3="orange"), na.value = "black")
 gg_platemap_3
 
-
 gg_platemap_4 <- allDat %>%
   filter(experiment=="2024-02_Peffect_Trial4") %>%
   # select(plate, row, col, strain1, strain2,Healthiness_hsv,crim_btm, neon_btm ) %>% View()
@@ -232,6 +238,22 @@ gg_platemap_4 <- allDat %>%
   scale_fill_manual(values=c(MOCK="grey", WCS365="darkgreen", N2C3="orange"), na.value = "white")+
   scale_color_manual(values=c(MOCK="white", WCS365="darkgreen", N2C3="orange"), na.value = "black")
 gg_platemap_4
+
+gg_platemap_5 <- allDat %>%
+  filter(experiment=="2024_03_Peffect_Trial5") %>%
+  # select(plate, row, col, strain1, strain2,Healthiness_hsv,crim_btm, neon_btm ) %>% View()
+  # select(plate) %>% table()
+  # select(plate, row, col, strain1, strain2, ) %>%
+  # View()
+  # filter(plant !="NOPLANT") %>%
+  mutate(row=factor(row, levels=rev(sort(unique(row))))) %>%
+  ggplot() +
+  geom_tile(aes(x=col, y=(row), fill=strain1)) +
+  geom_point(aes(x=col, y=(row), col=strain2)) +
+  facet_grid(.~plate)+
+  scale_fill_manual(values=c(MOCK="grey", WCS365="darkgreen", N2C3="orange"), na.value = "white")+
+  scale_color_manual(values=c(MOCK="white", WCS365="darkgreen", N2C3="orange"), na.value = "black")
+gg_platemap_5
 
 
 # gg_platemap_dd <- allDat %>%
@@ -323,7 +345,9 @@ man_remove <- c("2023-12_priorityeffects_Nov-10th-transfer-PlateD_cropped_G_11"
                 ,"2023-12_priorityeffects_Nov-9th-transfer-PlateC_cropped_G_8"
                 ,"2023-12_priorityeffects_Nov-9th-transfer-PlateC_cropped_F_8" ## E and F look weird in follow up sanity checks
                 ,"2023-12_priorityeffects_Nov-9th-transfer-PlateC_cropped_E_8"
-                , "2024-02_Peffects_Trial3_PlateC_T3h_Trial4_G_2")
+                , "2024-02_Peffects_Trial3_PlateC_T3h_Trial4_G_2"
+                , "2024_03_Peffects_Trial5_PlateB-T6h_Good_Trial5_E_3"
+                , "2024_03_Peffects_Trial5_PlateB_T6H_Bad_Trial5_F_4")
 
 
 # Are there any mis-alignments (ie: StrainMix is NA or all_plant_pixels is NA, indicating that some plate/experiment/well combo doesn't line up)
@@ -503,6 +527,7 @@ allDat_raw_adj <- allDat_raw %>%
   mutate(
     ratio_cn_fluor = crim_raw_blanked/neon_raw_blanked ## TRY THIS-- they are deleting a lot of stuff accidentally if you adjust for bg fluor
     ) %>%
+  rowwise() %>% mutate(ratio_cn_fluor = ifelse(crim_raw_blanked<0 | neon_raw_blanked<0, NA, ratio_cn_fluor)) %>% ungroup() %>%
   # Log 2 fold change for crim vs neon
   mutate(CN_FC_fluor = log2(ratio_cn_fluor)
          # ,CN_FC_estAbs = log2(ratio_cn_estAbs)
@@ -520,7 +545,8 @@ allDat_raw_adj <- allDat_raw %>%
   mutate(experiment = ifelse(experiment == "2023-12_priorityeffects", "2023-11-08",
                              ifelse(experiment == "2023-12_priorityeffects2", "2023-12-06", 
                                     ifelse(experiment == "2024-02_Peffect_Trial3", "2024-01-30", 
-                                           ifelse(experiment == "2024-02_Peffect_Trial4", "2024-02-14", experiment)))))
+                                           ifelse(experiment == "2024-02_Peffect_Trial4", "2024-02-14", 
+                                                  ifelse(experiment == "2024_03_Peffect_Trial5","2024-03-20",experiment))))))
 
 dat_plant_all <- allDat_raw_adj %>%
   filter( plant == "col0") %>%
@@ -776,33 +802,43 @@ dat_plant %>%
   facet_grid(strain2~transfer_h)
 
 ###### CFU processing #######
-
 allCFU_adj <- allCFU %>%
   mutate(experiment = ifelse(experiment == "2023-12_priorityeffects", "2023-11-08",
                              ifelse(experiment == "2023-12_priorityeffects2", "2023-12-06", 
                                     ifelse(experiment == "2024-02_Peffect_Trial3", "2024-01-30", 
-                                           ifelse(experiment == "2024-02_Peffect_Trial4", "2024-02-14", experiment))))) 
+                                           ifelse(experiment == "2024-02_Peffect_Trial4", "2024-02-14", 
+                                                  ifelse(experiment == "2024_03_Peffect_Trial5","2024-03-20",experiment)))))) %>%
+  mutate(plant_quality = ifelse(is.na(plant_quality), "good", 
+                                      ifelse(plant_quality == "","good",
+                                             plant_quality)))
 # REMOVE ALL EXPERIMENTS TO OMIT
 onCFU_summary <- allCFU_adj  %>% #filter(experiment %in% c("2024-02-14")) %>%
   filter(plant=="overnight") %>%
-  unite(experiment, transfer_h, col="exp_trans", remove=TRUE) %>%
+  unite(experiment, transfer_h, col="exp_trans", remove=FALSE) %>%
   mutate(batchtest = ifelse(exp_trans=="2024-02-14_6" & abs_600==0.001, "B","A")) %>%
-  group_by(batchtest, strain, abs_600) %>%
+  group_by(experiment, plant_quality, batchtest, strain, abs_600) %>%
   summarise(meanCount = mean(CFU_well), sd = sd(CFU_well), rep_on = n()) %>%
   ungroup() %>%
   mutate(treatment = ifelse(is.na(abs_600), "Plant root", paste0("Abs600=", abs_600,"\nsecond strain inoculant"))) %>%
   rename(strain2 = strain, strain2_od = abs_600, strain2_meanCount = meanCount, strain2_sd = sd) 
 
+### Look at CFUs on root for good and bad plants
+allCFU_adj %>% filter(plant=="col0") %>%
+  filter(experiment == "2024-03-20") %>%
+  ggplot() +
+  geom_point(aes(x=strain, y=log10(CFU_well)))+
+  facet_grid(.~plant_quality)
+
 # Root summary; also add in 
 rootCFU_summary <- allCFU_adj %>% filter(plant=="col0")  %>%
-  group_by(experiment, strain, transfer_h, abs_600) %>%
+  group_by(experiment, strain, transfer_h, abs_600, plant_quality) %>%
   summarise(meanCount = mean(CFU_well), sd = sd(CFU_well), rep_root= n()) %>%
   mutate(abs_600 = ifelse(is.na(abs_600), "root", as.character(abs_600))) %>%
   mutate(treatment = ifelse(is.na(abs_600), "Plant root", paste0("Abs600=", abs_600,"\nsecond strain inoculant"))) %>% ungroup() %>%
   # mutate(batchtest = ifelse(experiment == "2024-02-14" & transfer_h == 6, "B","A")) %>%
   rename(strain1 = strain, strain1_meanCount = meanCount, strain1_sd = sd) %>%
   left_join(dat_plant_all) %>%
-  select(experiment, transfer_h, strain1, strain2, strain2_od, WN_FC_fluor_offset, Healthiness_hsv, strain1_meanCount, strain1_sd) %>%
+  select(experiment, transfer_h, strain1, strain2, strain2_od, WN_FC_fluor_offset, Healthiness_hsv, strain1_meanCount, strain1_sd, plant_quality) %>%
   mutate(Alive = as.numeric(Healthiness_hsv>400)) %>%
   mutate(batchtest = ifelse(experiment == "2024-02-14" & transfer_h == 6 & (strain2_od==0.001), "B","A")) 
 
@@ -811,7 +847,8 @@ onCFU_summary %>%
   ggplot() +
   geom_pointrange(aes(x=(strain2_od), y=log10(strain2_meanCount)
                       , ymin=log10(strain2_meanCount-strain2_sd), ymax=log10(strain2_meanCount+strain2_sd)
-                      , col=strain2))+
+                      , col=strain2
+                      , pch=experiment))+
   # facet_grid(.~strain2) +
   scale_x_log10() +
   xlab("ABS600 of strain 2") + ylab("CFU count of strain2 (log10)") +
@@ -839,15 +876,17 @@ allCFU_plants <- left_join(rootCFU_summary, onCFU_summary, relationship = "many-
                                   , ifelse(strain1=="N2C3" & strain2 == "WCS365", -S12_FC_inocCFU, NA))) %>%
   mutate(Treatment= ifelse(strain1=="N2C3" & strain2 == "WCS365", "N2C3 first",
                                ifelse(strain1=="WCS365" & strain2 == "N2C3", "WCS365 first", NA)))
+
 # Check
 allCFU_plants %>%
-  filter(experiment == "2024-02-14") %>%
+  filter(experiment %in% c("2024-02-14", "2024-03-20")) %>%
   # filter(transfer_h>0) %>%
   ggplot(aes(x=WN_FC_inocCFU, y=WN_FC_fluor_offset, group=Treatment, col=Treatment)) +
   geom_jitter(aes(pch=factor(transfer_h)), height=0.1, width=0.1)  +
   geom_smooth(span=100)
 
 ## Get cfu data for both mixes
+
 onCFU_summary1 <- onCFU_summary %>%
   filter(batchtest == "A" & strain2_od!=0.001) %>%
   mutate(batchtest = "B") %>%
@@ -858,8 +897,6 @@ onCFU_summary2 <-onCFU_summary1 %>%
            , strain1_sd = strain2_sd
            , strain1=strain2
            , strain1_od= strain2_od) 
-
-######### WORKING, NOT JOINING PROPERLY, MISSING MIXED #########
 
 allCFU_mixedtreat <- dat_plant_all %>%
   filter(Type=="MIX") %>% 
