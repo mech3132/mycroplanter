@@ -492,6 +492,8 @@ fixef(brm_inoc_bin)
 # Vehtari et al. (2015), LOO may be the preferred method to perform model comparisons.
 loo_compare <- LOO(brm_fluorinoc_bin, brm_fluor_bin, brm_inoc_bin)
 loo_compare
+loo_compare2 <- LOO(brm_fluor_bin, brm_inoc_bin)
+loo_compare2
 # fluorescence model is best
 
 ############# add predictions to plots #############
