@@ -10,7 +10,7 @@ Raw data (image files, plate maps, etc) can be found on Dryad (DOI: 10.5061/drya
 * Priority effects experiment (priorityeffets)
 * Priority effects on plates (priorityplates)
 
-In the main directory, you will find the image processing cript, 'process_athal_scan.py'. For help running the script, please see the associated README file.
+In the main directory, you will find the image processing script, 'process_athal_scan.py'. For help running the script, please see the associated README file.
 
 
 
