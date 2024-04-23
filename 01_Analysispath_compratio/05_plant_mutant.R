@@ -120,6 +120,14 @@ brm_alldat_mockonly_bin <- brm(Alive ~ plant*protect , data = dat_plantmutant_fo
 )
 brm_alldat_mockonly_bin
 
+sink("05_plant_mutant/stats_and_numbers.txt")
+brm_alldat_bin
+
+print("")
+print("")
+brm_alldat_mockonly_bin
+sink()
+
 dat_forpred<- dat_plantmutant_forbrms_onlyn2c3 %>%
   select( plant, protect, path_cells_log, path, path_od, ratio) %>%
   distinct() 
@@ -142,77 +150,78 @@ dat_withpred_mock <- alldatbin_predict_mock %>% as.data.frame() %>%
 alldat_withpred <- full_join(dat_withpred, dat_withpred_mock)
 
 dat_plantmutant_summarise <- dat_plantmutant_summarise %>%
-  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1-10", 
-                         ifelse(factor(round(path_cells_log))==6, "1-1",
-                                ifelse(factor(round(path_cells_log))==5, "10-1",
+  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1-10 (commensal:N2C3)", 
+                         ifelse(factor(round(path_cells_log))==6, "1-1 (commensal:N2C3)",
+                                ifelse(factor(round(path_cells_log))==5, "10-1 (commensal:N2C3)",
                                        ifelse(factor(round(path_cells_log))==0, "No pathogen", NA))))) %>%
-  mutate(ratio2 = factor(ratio2, levels=c("No pathogen", "10-1","1-1","1-10"))) 
-
-gg_brms_plantmutant_alldat <- alldat_withpred %>%
-  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1-10", 
-                         ifelse(factor(round(path_cells_log))==6, "1-1",
-                                ifelse(factor(round(path_cells_log))==5, "10-1",
-                                       ifelse(factor(round(path_cells_log))==0, "No pathogen", NA))))) %>%
-  mutate(ratio2 = factor(ratio2, levels=c("No pathogen", "10-1","1-1","1-10"))) %>%
-  ggplot()+
-  geom_bar(dat_plantmutant_summarise, mapping=aes(x=ratio2, y=propAlive, group=plant, fill=plant),alpha=0.25 , stat='identity', position = position_dodge())+
-  # geom_pointrange(aes(x=factor(round(path_cells_log)), y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=plant), position = position_dodge2(width=0.9)) +
-  # geom_pointrange(aes(x=factor(round(path_cells_log)), y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=plant), position = position_dodge2(width=0.9), lwd=2) +
-  geom_pointrange(aes(x=ratio2, y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=plant), position = position_dodge2(width=0.9)) +
-  # geom_pointrange(aes(x=ratio2, y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=plant), position = position_dodge2(width=0.9), lwd=2) +
-  facet_grid(protect ~ path, scales="free_x", space = "free_x", labeller = labeller(protect=c(MOCK="MOCK", WCS365="WCS365",CHAO="CHA0", PF5 = "Pf5")))+
-  # scale_color_manual(values=c(MOCK="black", N2C3="orange"))+
-  scale_fill_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) + 
-  scale_color_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) +
-labs(col="Plant\ngenotype", fill="Plant\ngenotype") +
-  ylab("Probability of healthy plant\n(Health score > 400)")+ 
-  xlab("Protective : Pathogen ratio")
-gg_brms_plantmutant_alldat
-ggsave(filename="05_plant_mutant/gg_brms_plantmutant_alldat.png", gg_brms_plantmutant_alldat, height=8, width=10)
-
-## reduced version
-gg_brms_plantmutant_simp <- alldat_withpred %>%
-  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1-10", 
-                         ifelse(factor(round(path_cells_log))==6, "1-1",
-                                ifelse(factor(round(path_cells_log))==5, "10-1",
-                                       ifelse(factor(round(path_cells_log))==0, "No pathogen", NA))))) %>%
-  mutate(ratio2 = factor(ratio2, levels=c("No pathogen", "10-1","1-1","1-10"))) %>%
-  filter(ratio2 !="1-10") %>%
-  ggplot()+
-  geom_bar(dat_plantmutant_summarise %>% filter(ratio2 !="1-10"), mapping=aes(x=ratio2, y=propAlive, group=plant, fill=plant),alpha=0.25 , stat='identity', position = position_dodge())+
-  # geom_pointrange(aes(x=factor(round(path_cells_log)), y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=plant), position = position_dodge2(width=0.9)) +
-  # geom_pointrange(aes(x=factor(round(path_cells_log)), y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=plant), position = position_dodge2(width=0.9), lwd=2) +
-  geom_pointrange(aes(x=ratio2, y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=plant, lwd="95% prediction\ninterval"), position = position_dodge2(width=0.9), size=0) +
-  geom_pointrange(aes(x=ratio2, y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=plant, lwd="90% prediction\ninterval"), position = position_dodge2(width=0.9), size=0) +
-  facet_grid(protect ~ path, scales="free_x", space = "free_x", labeller = labeller(protect=c(MOCK="MOCK", WCS365="WCS365",CHAO="CHA0", PF5 = "Pf5")))+
-  # scale_color_manual(values=c(MOCK="black", N2C3="orange"))+
-  scale_fill_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) + 
-  scale_color_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) +
-  scale_linewidth_manual(values=c(2, 0.5)) +
-  labs(col="Plant genotype\n(Model estimates)", fill="Plant genotype\n(Bars represent\nobserved proportions)", linewidth="Model estimates") +
-  ylab("Probability of healthy plant\n(Health score > 400)")+ 
-  xlab("Protective : Pathogen ratio")+
-  guides(color="none")
-gg_brms_plantmutant_simp
-ggsave(filename="05_plant_mutant/gg_brms_plantmutant_simp.png", gg_brms_plantmutant_simp, height=4, width=6)
+  mutate(ratio2 = factor(ratio2, levels=c("No pathogen", "10-1 (commensal:N2C3)","1-1 (commensal:N2C3)","1-10 (commensal:N2C3)"))) 
+# 
+# gg_brms_plantmutant_alldat <- alldat_withpred %>%
+#   mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1-10", 
+#                          ifelse(factor(round(path_cells_log))==6, "1-1",
+#                                 ifelse(factor(round(path_cells_log))==5, "10-1",
+#                                        ifelse(factor(round(path_cells_log))==0, "No pathogen", NA))))) %>%
+#   mutate(ratio2 = factor(ratio2, levels=c("No pathogen", "10-1","1-1","1-10"))) %>%
+#   ggplot()+
+#   geom_bar(dat_plantmutant_summarise, mapping=aes(x=ratio2, y=propAlive, group=plant, fill=plant),alpha=0.25 , stat='identity', position = position_dodge())+
+#   # geom_pointrange(aes(x=factor(round(path_cells_log)), y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=plant), position = position_dodge2(width=0.9)) +
+#   # geom_pointrange(aes(x=factor(round(path_cells_log)), y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=plant), position = position_dodge2(width=0.9), lwd=2) +
+#   geom_pointrange(aes(x=ratio2, y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=plant), position = position_dodge2(width=0.9)) +
+#   # geom_pointrange(aes(x=ratio2, y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=plant), position = position_dodge2(width=0.9), lwd=2) +
+#   facet_grid(protect ~ path, scales="free_x", space = "free_x", labeller = labeller(protect=c(MOCK="MOCK", WCS365="WCS365",CHAO="CHA0", PF5 = "Pf5")))+
+#   # scale_color_manual(values=c(MOCK="black", N2C3="orange"))+
+#   scale_fill_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) + 
+#   scale_color_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) +
+# labs(col="Plant\ngenotype", fill="Plant\ngenotype") +
+#   ylab("Probability of healthy plant\n(Health score > 400)")+ 
+#   xlab("Protective : Pathogen ratio")
+# gg_brms_plantmutant_alldat
+# ggsave(filename="05_plant_mutant/gg_brms_plantmutant_alldat.png", gg_brms_plantmutant_alldat, height=8, width=10)
+# 
+# ## reduced version
+# gg_brms_plantmutant_simp <- alldat_withpred %>%
+#   mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1-10", 
+#                          ifelse(factor(round(path_cells_log))==6, "1-1",
+#                                 ifelse(factor(round(path_cells_log))==5, "10-1",
+#                                        ifelse(factor(round(path_cells_log))==0, "No pathogen", NA))))) %>%
+#   mutate(ratio2 = factor(ratio2, levels=c("No pathogen", "10-1","1-1","1-10"))) %>%
+#   filter(ratio2 !="1-10") %>%
+#   ggplot()+
+#   geom_bar(dat_plantmutant_summarise %>% filter(ratio2 !="1-10"), mapping=aes(x=ratio2, y=propAlive, group=plant, fill=plant),alpha=0.25 , stat='identity', position = position_dodge())+
+#   # geom_pointrange(aes(x=factor(round(path_cells_log)), y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=plant), position = position_dodge2(width=0.9)) +
+#   # geom_pointrange(aes(x=factor(round(path_cells_log)), y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=plant), position = position_dodge2(width=0.9), lwd=2) +
+#   geom_pointrange(aes(x=ratio2, y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=plant, lwd="95% prediction\ninterval"), position = position_dodge2(width=0.9), size=0) +
+#   geom_pointrange(aes(x=ratio2, y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=plant, lwd="90% prediction\ninterval"), position = position_dodge2(width=0.9), size=0) +
+#   facet_grid(protect ~ path, scales="free_x", space = "free_x", labeller = labeller(protect=c(MOCK="MOCK", WCS365="WCS365",CHAO="CHA0", PF5 = "Pf5")))+
+#   # scale_color_manual(values=c(MOCK="black", N2C3="orange"))+
+#   scale_fill_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) + 
+#   scale_color_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) +
+#   scale_linewidth_manual(values=c(2, 0.5)) +
+#   labs(col="Plant genotype\n(Model estimates)", fill="Plant genotype\n(Bars represent\nobserved proportions)", linewidth="Model estimates") +
+#   ylab("Probability of healthy plant\n(Health score > 400)")+ 
+#   xlab("Protective : Pathogen ratio")+
+#   guides(color="none")
+# gg_brms_plantmutant_simp
+# ggsave(filename="05_plant_mutant/gg_brms_plantmutant_simp.png", gg_brms_plantmutant_simp, height=4, width=6)
 
 
 #### Plot predictions on actualy data ####
 # get data
 dat_plantmutant_forplotting <- dat_plantmutant_forbrms %>%
-  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1-10", 
-                         ifelse(factor(round(path_cells_log))==6, "1-1",
-                                ifelse(factor(round(path_cells_log))==5, "10-1",
+  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1-10 (commensal:N2C3)", 
+                         ifelse(factor(round(path_cells_log))==6, "1-1 (commensal:N2C3)",
+                                ifelse(factor(round(path_cells_log))==5, "10-1 (commensal:N2C3)",
                                        ifelse(factor(round(path_cells_log))==0, "No\nN2C3", NA))))) %>%
-  mutate(ratio2 = factor(ratio2, levels=c("No\nN2C3", "10-1","1-1","1-10"))) %>%
-  filter(ratio2 !="1-10")
+  mutate(ratio2 = factor(ratio2, levels=c("No\nN2C3", "1-10 (commensal:N2C3)","1-1 (commensal:N2C3)","10-1 (commensal:N2C3)"))) %>%
+  filter(ratio2 !="1-10") %>%
+  mutate(pathogen=factor(round(path_cells_log)))
   
 gg_brms_plantmutant_simp_wdat <- alldat_withpred %>%
-  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1-10", 
-                         ifelse(factor(round(path_cells_log))==6, "1-1",
-                                ifelse(factor(round(path_cells_log))==5, "10-1",
+  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1-10 (commensal:N2C3)", 
+                         ifelse(factor(round(path_cells_log))==6, "1-1 (commensal:N2C3)",
+                                ifelse(factor(round(path_cells_log))==5, "10-1 (commensal:N2C3)",
                                        ifelse(factor(round(path_cells_log))==0, "No\nN2C3", NA))))) %>%
-  mutate(ratio2 = factor(ratio2, levels=c("No\nN2C3", "10-1","1-1","1-10"))) %>%
+  mutate(ratio2 = factor(ratio2, levels=c("No\nN2C3", "1-10 (commensal:N2C3)","1-1 (commensal:N2C3)","10-1 (commensal:N2C3)"))) %>%
   filter(ratio2 !="1-10") %>%
   ggplot()+
   # geom_jitter(data=dat_plantmutant_forplotting,
@@ -242,7 +251,7 @@ gg_brms_plantmutant_simp_wdat_h <- alldat_withpred %>%
                          ifelse(factor(round(path_cells_log))==6, "1-1",
                                 ifelse(factor(round(path_cells_log))==5, "10-1",
                                        ifelse(factor(round(path_cells_log))==0, "No\nN2C3", NA))))) %>%
-  mutate(ratio2 = factor(ratio2, levels=c("No\nN2C3", "10-1","1-1","1-10"))) %>%
+  mutate(ratio2 = factor(ratio2, levels=c("No\nN2C3", "1-10","1-1","10-1"))) %>%
   filter(ratio2 !="1-10") %>%
   ggplot()+
   # geom_jitter(data=dat_plantmutant_forplotting,
@@ -267,6 +276,154 @@ gg_brms_plantmutant_simp_wdat_h <- alldat_withpred %>%
   guides(lwd=guide_legend(nrow=2,byrow=TRUE))
 gg_brms_plantmutant_simp_wdat_h
 ggsave(filename="05_plant_mutant/gg_brms_plantmutant_simp_wdat_h.png", gg_brms_plantmutant_simp_wdat_h, height=4, width=7)
+
+gg_plantmutant_v2 <- alldat_withpred %>%
+  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1:10", 
+                         ifelse(factor(round(path_cells_log))==6, "1:1",
+                                ifelse(factor(round(path_cells_log))==5, "1:0.1",
+                                       ifelse(factor(round(path_cells_log))==0, "1:0 (no N2C3)", NA))))) %>%
+  mutate(ratio2 = factor(ratio2, levels=c("1:0 (no N2C3)", "1:10","1:1","1:0.1"))) %>%
+  filter(ratio2 !="1:10") %>%
+  ggplot()+
+  # geom_jitter(data=dat_plantmutant_forplotting,
+  # aes(x=ratio2, y=Alive), cex=0.1, height=0.2, width=0.2)+
+  geom_point(data=dat_plantmutant_forplotting %>%
+               mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1:10", 
+                                      ifelse(factor(round(path_cells_log))==6, "1:1",
+                                             ifelse(factor(round(path_cells_log))==5, "1:0.1",
+                                                    ifelse(factor(round(path_cells_log))==0, "1:0 (no N2C3)", NA))))) %>%
+               mutate(ratio2 = factor(ratio2, levels=c("1:0 (no N2C3)", "1:10","1:1","1:0.1"))) %>% filter(ratio2 !="1:10") 
+             , aes(x=plant, y=Alive, col=ratio2, group=ratio2)
+             , show.legend = TRUE, position=position_jitterdodge(jitter.height=0.1, jitter.width=0.5, dodge=0.6)
+             , cex=0.1) +
+  geom_point(aes(x=plant, y=`med.50%`, col=ratio2), size=3, position = position_dodge2(width=0.6), size=0) +
+  geom_pointrange(aes(x=plant, y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=ratio2, lwd="95% prediction\ninterval"), position = position_dodge2(width=0.6), size=0) +
+  geom_pointrange(aes(x=plant, y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=ratio2, lwd="90% prediction\ninterval"), position = position_dodge2(width=0.6), size=0) +
+  facet_grid(.~protect, scales="free_x", space = "free_x", labeller = labeller(protect=c(MOCK="No microbiota", WCS365="WCS365",CHAO="CHA0", PF5 = "Pf5")))+
+  # scale_color_manual(values=c(MOCK="black", N2C3="orange"))+
+  # scale_fill_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) + 
+  # scale_color_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) +
+  scale_color_manual(values=c("1:0 (no N2C3)"="darkgrey", "1:1"="darkorange", "1:0.1"="gold2")) +
+  scale_linewidth_manual(values=c(2, 0.5)) +
+  labs(col="Microbiota:Pathogen\ninoculation ratio",  linewidth="Model estimates") +
+  ylab("Probability of healthy plant")+ 
+  xlab("Plant genotype")+
+  scale_y_continuous(breaks=c(0,0.5,1))+
+  theme_bw()
+gg_plantmutant_v2
+ggsave("05_plant_mutant/gg_plantmutant_v2.png",gg_plantmutant_v2, height=4, width=8)
+
+###### SHORTCUT TO STATS #####
+alldat_withpred %>%
+  filter(protect %in% c("WCS365","CHAO"), ratio %in% c("1-1"), plant%in% c("col0","bbc")) %>%
+  arrange(protect)
+alldat_withpred %>%
+  filter(protect %in% c("WCS365","CHAO"), ratio %in% c("10-1"), plant=="bbc") %>%
+  arrange(protect)
+alldat_withpred %>%
+  filter(protect %in% c("WCS365","CHAO"), path=="MOCK",  plant=="bbc") %>%
+  arrange(protect)
+
+alldat_withpred %>%
+  filter(protect %in% c("WCS365","CHAO"), path=="N2C3",  ratio %in% c("1-1"), plant%in% c("col0","bik1")) %>%
+  arrange(protect)
+
+gg_plantmutant_v3 <- alldat_withpred %>%
+  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1:10 (commensal:N2C3)", 
+                         ifelse(factor(round(path_cells_log))==6, "1:1 (commensal:N2C3)",
+                                ifelse(factor(round(path_cells_log))==5, "1:0.1 (commensal:N2C3)",
+                                       ifelse(factor(round(path_cells_log))==0, "No\nN2C3", NA))))) %>%
+  mutate(ratio2 = factor(ratio2, levels=c("No\nN2C3", "1:10 (commensal:N2C3)","1:1 (commensal:N2C3)","1:0.1 (commensal:N2C3)"))) %>%
+  filter(ratio2 !="1:10 (commensal:N2C3)") %>%
+  filter(protect!="MOCK") %>%
+  ggplot()+
+  # geom_jitter(data=dat_plantmutant_forplotting,
+  # aes(x=ratio2, y=Alive), cex=0.1, height=0.2, width=0.2)+
+  geom_point(data=dat_plantmutant_forplotting%>%filter(protect!="MOCK") 
+             , aes(x=plant, y=Alive, col=ratio2, group=ratio2)
+             , show.legend = TRUE, position=position_jitterdodge(jitter.height=0.1, jitter.width=0.5, dodge=0.6)
+             , cex=0.1) +
+  geom_point(aes(x=plant, y=`med.50%`, col=ratio2), size=3, position = position_dodge2(width=0.6)) +
+  geom_pointrange(aes(x=plant, y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=ratio2, lwd="95% prediction\ninterval"), position = position_dodge2(width=0.6), size=0) +
+  geom_pointrange(aes(x=plant, y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=ratio2, lwd="90% prediction\ninterval"), position = position_dodge2(width=0.6), size=0) +
+  facet_grid(.~protect, scales="free_x", space = "free_x", labeller = labeller(protect=c(MOCK="MOCK", WCS365="WCS365",CHAO="CHA0", PF5 = "Pf5")))+
+  # scale_color_manual(values=c(MOCK="black", N2C3="orange"))+
+  # scale_fill_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) + 
+  # scale_color_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) +
+  scale_color_manual(values=c("No\nN2C3"="black", "1:1 (commensal:N2C3)"="darkorange", "1:0.1 (commensal:N2C3)"="gold2")) +
+  scale_linewidth_manual(values=c(2, 0.5)) +
+  labs(col="Protective:Pathogen\ninoculation ratio",  linewidth="Model estimates") +
+  ylab("Probability of healthy plant")+ 
+  xlab("Plant genotype")+
+  scale_y_continuous(breaks=c(0,0.5,1))+
+  theme_bw()
+gg_plantmutant_v3
+ggsave("05_plant_mutant/gg_plantmutant_v3.png",gg_plantmutant_v3, height=4, width=7)
+
+
+gg_plantmutant_wcs <- alldat_withpred %>%
+  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1-10 (commensal:N2C3)", 
+                         ifelse(factor(round(path_cells_log))==6, "1-1 (commensal:N2C3)",
+                                ifelse(factor(round(path_cells_log))==5, "10-1 (commensal:N2C3)",
+                                       ifelse(factor(round(path_cells_log))==0, "No\nN2C3", NA))))) %>%
+  mutate(ratio2 = factor(ratio2, levels=c("No\nN2C3", "1-10 (commensal:N2C3)","1-1 (commensal:N2C3)","10-1 (commensal:N2C3)"))) %>%
+  filter(ratio2 !="1-10 (commensal:N2C3)") %>%
+  filter(protect %in% c("MOCK", "WCS365") )%>%
+  ggplot()+
+  # geom_jitter(data=dat_plantmutant_forplotting,
+  # aes(x=ratio2, y=Alive), cex=0.1, height=0.2, width=0.2)+
+  geom_point(data=dat_plantmutant_forplotting %>% filter(protect %in% c("MOCK", "WCS365") )
+             , aes(x=plant, y=Alive, col=ratio2, group=ratio2)
+             , show.legend = TRUE, position=position_jitterdodge(jitter.height=0.1, jitter.width=0.5, dodge=0.6)
+             , cex=0.1) +
+  geom_point(aes(x=plant, y=`med.50%`, col=ratio2), size=3, position = position_dodge2(width=0.6)) +
+  geom_pointrange(aes(x=plant, y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=ratio2, lwd="95% prediction\ninterval"), position = position_dodge2(width=0.6), size=0) +
+  geom_pointrange(aes(x=plant, y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=ratio2, lwd="90% prediction\ninterval"), position = position_dodge2(width=0.6), size=0) +
+  facet_grid(.~protect, scales="free_x", space = "free_x", labeller = labeller(protect=c(MOCK="MOCK", WCS365="WCS365",CHAO="CHA0", PF5 = "Pf5")))+
+  # scale_color_manual(values=c(MOCK="black", N2C3="orange"))+
+  # scale_fill_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) + 
+  # scale_color_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) +
+  scale_color_manual(values=c("No\nN2C3"="black", "1-1 (commensal:N2C3)"="darkorange", "10-1 (commensal:N2C3)"="gold2")) +
+  scale_linewidth_manual(values=c(2, 0.5)) +
+  labs(col="Protective:Pathogen\ninoculation ratio",  linewidth="Model estimates") +
+  ylab("Probability of healthy plant")+ 
+  xlab("Plant genotype")+
+  scale_y_continuous(breaks=c(0,0.5,1))+
+  theme_bw()
+gg_plantmutant_wcs
+ggsave("05_plant_mutant/gg_plantmutant_wcs.png",gg_plantmutant_wcs, height=4, width=6)
+
+
+alldat_withpred %>%
+  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1-10", 
+                         ifelse(factor(round(path_cells_log))==6, "1-1",
+                                ifelse(factor(round(path_cells_log))==5, "10-1",
+                                       ifelse(factor(round(path_cells_log))==0, "No\nN2C3", NA))))) %>%
+  mutate(ratio2 = factor(ratio2, levels=c("No\nN2C3", "1-10","1-1","10-1"))) %>%
+  filter(ratio2 !="1-10") %>%
+  ggplot()+
+  # geom_jitter(data=dat_plantmutant_forplotting,
+  # aes(x=ratio2, y=Alive), cex=0.1, height=0.2, width=0.2)+
+  geom_point(data=dat_plantmutant_forplotting
+             , aes(x=factor(path_od), y=Alive, col=protect, group=factor(path_od))
+             , show.legend = TRUE, position=position_jitterdodge(jitter.height=0.1, jitter.width=0.5, dodge=0.6)
+             , cex=0.1) +
+  geom_point(aes(x=factor(path_od), y=`med.50%`, col=protect), size=3, position = position_dodge2(width=0.6)) +
+  geom_pointrange(aes(x=factor(path_od), y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=protect, lwd="95% prediction\ninterval"), position = position_dodge2(width=0.6), size=0) +
+  geom_pointrange(aes(x=factor(path_od), y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=protect, lwd="90% prediction\ninterval"), position = position_dodge2(width=0.6), size=0) +
+  facet_grid(.~plant, scales="free_x", space = "free_x", labeller = labeller(protect=c(MOCK="MOCK", WCS365="WCS365",CHAO="CHA0", PF5 = "Pf5")))+
+  # scale_color_manual(values=c(MOCK="black", N2C3="orange"))+
+  # scale_fill_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) + 
+  # scale_color_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) +
+  # scale_color_manual(values=c("No\nN2C3"="black", "1-1"="darkorange", "10-1"="gold2")) +
+  scale_linewidth_manual(values=c(2, 0.5)) +
+  labs(col="Inoculation ratio",  linewidth="Model estimates") +
+  ylab("Probability of healthy plant")+ 
+  xlab("Protective : Pathogen ratio")+
+  scale_y_continuous(breaks=c(0,0.5,1))+
+  theme_bw()+
+  theme(legend.position = "bottom") +
+  guides(lwd=guide_legend(nrow=2,byrow=TRUE))
 
 
 sink("05_plant_mutant/stats_and_numbers.txt") 

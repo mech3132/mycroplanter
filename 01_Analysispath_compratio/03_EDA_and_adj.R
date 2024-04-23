@@ -570,7 +570,8 @@ save(col_all, file="03_EDA_and_adj/plant_colours.RData")
 
  allDat_pilot <- allDat_filt %>%   
    filter(experiment=="2023-05-16_basiceffects_n2c3")
-  
+ col_all
+
  gg_platemap_pilot <- allDat_pilot %>%
    mutate(row = factor(row, levels=rev(LETTERS[1:8]))) %>%
    ggplot() +
@@ -588,6 +589,7 @@ save(col_all, file="03_EDA_and_adj/plant_colours.RData")
  ggsave(filename = "03_EDA_and_adj/gg_platemap_pilot.png", gg_platemap_pilot, width=8, height=8)
  
 gg_pilot_n2c3wcs <- allDat_pilot %>%
+  filter(protect_od %in% c(0,0.001), path_od %in% c(0,0.001)) %>%
   mutate(inoc = ifelse(StrainMix=="MOCK-MOCK", "MOCK", 
                        ifelse(StrainMix == "MOCK-N2C3", "N2C3", 
                               ifelse(StrainMix == "WCS365-MOCK", "WCS365", "N2C3 +\nWCS365")))) %>%
@@ -596,17 +598,20 @@ gg_pilot_n2c3wcs <- allDat_pilot %>%
   mutate(single_maxcell = round(max(c(protect_cells_log, path_cells_log)))) %>% ungroup() %>%
   ggplot(aes(x=inoc, y=Healthiness_hsv)) +
   geom_boxplot(outlier.color = NA) +
-  geom_jitter(aes(col=factor(single_maxcell))) +
+  geom_jitter(aes(fill=UniqueID, cex=(all_plant_pixels)), alpha=0.8, col="black", pch=21) +
   theme_test() +
   theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5))+
   geom_hline(aes(yintercept=400)) +
-  scale_color_manual(values=c("darkgrey","yellow2","gold2","goldenrod","goldenrod4","coral4"))+
+  scale_fill_manual(values=col_all) +
+  # scale_color_manual(values=c("darkgrey","yellow2","gold2","goldenrod","goldenrod4","coral4"))+
   # facet_grid(.~protect, drop=TRUE, scales="free_x") +
   # scale_color_viridis_c()+
-  labs(col="Inoculation dose\n(log10 cells)") +
-  xlab("Inoculant") + ylab("Health metric")
+  labs(col="Inoculation dose\n(log10 cells)", size='Plant size\n(pixels)') +
+  xlab("Inoculant") + ylab("Health Score")+
+  guides(fill="none")+
+  scale_radius(range=c(0.1,5))
 gg_pilot_n2c3wcs
-ggsave(filename = "03_EDA_and_adj/gg_pilot_n2c3wcs.png", gg_pilot_n2c3wcs, width=5, height=3)
+ggsave(filename = "03_EDA_and_adj/gg_pilot_n2c3wcs.png", gg_pilot_n2c3wcs, width=4, height=3)
 
 # Boxplot of N2C3, WCS365, MOCK
 allDat_filt %>%

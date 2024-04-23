@@ -110,7 +110,7 @@ dat_ac_monocultures_nolacZ <- dat_ac %>%
   filter(protect =="MOCK" | path == "MOCK") %>%
   # filter(!(protect=="MOCK"&path=="MOCK")) %>%
   mutate(Strain = ifelse(protect == "MOCK", as.character(path), as.character(protect))) %>%
-  select(Alive, Healthiness_hsv, Strain, protect, path, plant_age, total_cells_log, plate, experiment, path_cells_log, protect_cells_log) %>%
+  select(UniqueID, Alive, Healthiness_hsv, Strain, protect, path, plant_age, total_cells_log, plate, experiment, path_cells_log, protect_cells_log, all_plant_pixels) %>%
   mutate(Strain = factor(Strain, levels=c("MOCK","N2C3","WCS365","CHAO","CH267","PF5"))) %>%
   mutate(plant_age_adj = plant_age-5)
 # mutate(Strain = factor(Strain, levels=c("N2C3","WCS365","CHAO","CH267","PF5"))) 
@@ -343,7 +343,7 @@ gg_fullsdpriors_simp <- draws_fullsdpriors %>%
   theme_bw() +
   theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5))+
   ylab("Coefficient Estimate\n(>0 means positive effect\non plant health)")+
-  labs(col="Two-sided\nPD < 0.05", title="Model estimates for predictors of plant health\n(in competition with N2C3)")+
+  labs(col="Two-sided\nPD < 0.05")+
   # scale_color_manual(values=c(`PD<0.025 (95% CI)`="red", `PD<0.05 (90% CI)`="lightpink2")) +
   xlab("Predictor in model")
 gg_fullsdpriors_simp
@@ -368,11 +368,43 @@ gg_monoculture_forpriors_simp <- draws_monoculture %>%
   theme_bw() +
   theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5))+
   ylab("Coefficient Estimate\n(>0 means positive effect\non plant health)")+ 
-  labs(col="Two-sided\nPD < 0.05", title="Model estimatesfor predictors of plant health\n(monoculture)")+
+  labs(col="Two-sided\nPD < 0.05")+
   # scale_color_manual(values=c(`PD<0.025 (95% CI)`="red", `PD<0.05 (90% CI)`="pink")) +
   xlab("Predictor in model")
 gg_monoculture_forpriors_simp
 ggsave("04_ratio_experiment/gg_monoculture_forpriors_simp.png", gg_monoculture_forpriors_simp, height=4, width=6)
+
+
+gg_monoculture_rawdat <- dat_ac_monocultures_nolacZ %>%
+  # filter(Strain !="MOCK") %>%
+  filter(plant_age==5) %>%
+  mutate(Strain = ifelse(Strain=="CHAO","CHA0", ifelse(Strain=="PF5","Pf5", as.character(Strain)))) %>%
+  mutate(Strain = factor(Strain, levels=c("MOCK","WCS365","CHA0","CH267","Pf5","N2C3"))) %>%
+  # mutate(Strain2 = paste0(Strain, "\neffects")) %>%
+  # mutate(Strain2 = factor(Strain2, levels=c("N2C3\neffects","WCS365\neffects", "CHA0\neffects", "CH267\neffects", "Pf5\neffects"))) %>%
+  # filter(!(Strain=="MOCK" & Coefficient == "Cell density")) %>%
+  # filter(protect!="Pathogen only") %>%
+  # mutate(SigEffect = 0<sign(Q2.5*Q97.5)) %>%
+  # mutate(SigEffect2 = 0<sign(Q5*Q95)) %>%
+  # mutate(SigEffectAll = ifelse(SigEffect, "PD<0.025 (95% CI)", 
+                               # ifelse(SigEffect2, "PD<0.05 (90% CI)", NA))) %>%
+  ggplot(aes(x=total_cells_log, y=Healthiness_hsv)) +
+  # geom_pointrange(aes(x=Coefficient, y=med, ymin=Q2.5, ymax=Q97.5, col=SigEffectAll), show.legend = TRUE) +
+  geom_jitter(aes(fill=UniqueID, size=all_plant_pixels),alpha = 0.8, col='black', pch=21, height=0, width=0.2) +
+  # geom_boxplot() +
+  geom_hline(aes(yintercept=400)) +
+  facet_grid(.~Strain, scales="free_x",drop = TRUE) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5) )+
+  scale_x_continuous(breaks=seq(0,7,1)) +
+  scale_fill_manual(values=col_all) +
+  scale_radius(range=c(0.5,5)) +
+  ylab("Health Score") +
+  xlab("Inoculation dose (log10(+1))")+
+  guides(fill='none')+
+  labs(cex="Plant size\n(pixels)")
+gg_monoculture_rawdat
+ggsave("04_ratio_experiment/gg_monoculture_rawdat.png", gg_monoculture_rawdat, height=3, width=8)
 
 
 ###### simplified bayes predictions ######
@@ -446,14 +478,18 @@ newdat_expanded_mono <- bind_cols(newdat_expanded_mono,mean_pred95_predict_mono)
 newdat_expanded_mono_forplot <- newdat_expanded_mono %>% filter(plant_age==5) %>%
   rowwise() %>%
   mutate(total_cells_log = ifelse(Strain=="MOCK",rnorm(1, 0, 0.7), total_cells_log ) ) %>% ungroup() %>%
-  filter((total_cells_log>2 & Strain !="MOCK") | Strain == "MOCK")
+  filter((total_cells_log>2 & Strain !="MOCK") | Strain == "MOCK")%>%
+  mutate(Strain = ifelse(Strain=="CHAO","CHA0", ifelse(Strain=="PF5","Pf5", as.character(Strain)))) %>%
+  mutate(Strain = factor(Strain, levels=c("MOCK","WCS365","CHA0","CH267","Pf5","N2C3")))
 
 gg_monomodelpredictions_simp <- dat_ac_monocultures_nolacZ %>%
   # filter(Strain!="MOCK") %>%
+  mutate(Strain = ifelse(Strain=="CHAO","CHA0", ifelse(Strain=="PF5","Pf5", as.character(Strain)))) %>%
+  mutate(Strain = factor(Strain, levels=c("MOCK","WCS365","CHA0","CH267","Pf5","N2C3"))) %>%
   filter(plant_age==5) %>%
   ggplot() +
   geom_jitter(aes(x=total_cells_log, y=Alive)
-             , show.legend = FALSE, height=0.2, width=0
+             , show.legend = FALSE, height=0.1, width=0.1
              , cex=0.1) +
   geom_ribbon(data=newdat_expanded_mono_forplot, aes(x=(total_cells_log), ymin=Q2.5, ymax=Q97.5), alpha=0.25) +
   geom_line(data=newdat_expanded_mono_forplot, aes(x=(total_cells_log), y=mean)) +
@@ -528,7 +564,7 @@ brm_plantage <- brm(Alive ~ plant_age + plant_age:path + plant_age:protect + pla
                     , file = "04_ratio_experiment/brm_plantage"
                     , family = "bernoulli"
                     , iter=4000)
-
+brm_plantage
 ###### make stats plots ######
 # Plot mock estimates
 draws_plantage  <- as_draws_df(brm_plantage) %>%
@@ -616,6 +652,97 @@ gg_plantage_predictions <- predictions_plantage %>%
   theme(legend.position = "top")
 gg_plantage_predictions
 ggsave("04_ratio_experiment/gg_plantage_predictions.png",gg_plantage_predictions, height=3.5, width=7)
+
+
+## Idea: what if we subtracted average MOCK effect from each individual strain
+## Then we subtracted the interaction between WCSC and N2C3 for each
+posterior_linpred(brm_plantage, newdata=newdat_plantage, allow_new_levels=TRUE, transform = TRUE)
+mean_pred95_predict_plantage <- t(apply(, MARGIN = 2, function(x) c(mean=mean(x), Q2.5=as.numeric(quantile(x, 0.025)), Q97.5=as.numeric(quantile(x, 0.975)))))
+predictions_plantage <- bind_cols(newdat_plantage, mean_pred95_predict_plantage)
+
+mockMeans <- predictions_plantage %>% filter(path=="MOCK", protect=="MOCK") %>%
+  select(plant_age, mean) %>%
+  rename(mean_mock = mean)
+monocultureMeans <- predictions_plantage %>% filter(path=="MOCK", protect!="MOCK") %>%
+  select(protect, plant_age, mean) %>%
+  rename(mean_monoprotect = mean)
+predictions_plantage %>%
+  filter(path=="MOCK" | protect=="MOCK") %>%
+  filter(! (path=="MOCK" & protect == "MOCK")) %>%
+  left_join(mockMeans, relationship = "many-to-many") %>%
+  mutate(adjMean = mean-mean_mock, adjQ2.5 = Q2.5-mean_mock, adjQ97.5 = Q97.5-mean_mock) %>%
+  mutate(Strain = ifelse(!is.na(path) & path!="MOCK", as.character(path), ifelse(!is.na(protect) & protect !="MOCK", as.character(protect), NA))) %>%
+  mutate(Strain = factor(Strain, levels=c("WCS365","CHAO","CH267","PF5","N2C3"))) %>%
+  ggplot() +
+  geom_line(aes(x=plant_age, y=adjMean)) +
+  geom_ribbon(aes(x=plant_age, ymin=adjQ2.5, ymax=adjQ97.5), alpha=0.25, fill="yellow2") +
+  facet_grid(.~Strain)+
+  ylab("Decrease in probability of healthy plant\nrelative to MOCK treatment")+
+  xlab("Plant age at inoculation") +
+  scale_x_continuous(breaks=c(5,6,7)) +
+  scale_y_continuous(breaks=c(0,-0.2, 0.4, -0.6,-0.8))+
+  theme_bw()
+
+predictions_plantage %>%
+  filter(protect!="MOCK") %>%
+  # filter(! (path=="MOCK" & protect == "MOCK")) %>%
+  left_join(monocultureMeans, relationship = "many-to-many") %>%
+  mutate(adjMean = mean-mean_monoprotect, adjQ2.5 = Q2.5-mean_monoprotect, adjQ97.5 = Q97.5-mean_monoprotect) %>%
+  # mutate(Strain = ifelse(!is.na(path) & path!="MOCK", as.character(path), ifelse(!is.na(protect) & protect !="MOCK", as.character(protect), NA))) %>%
+  # mutate(Strain = factor(Strain, levels=c("WCS365","CHAO","CH267","PF5","N2C3"))) %>%
+  ggplot() +
+  geom_line(aes(x=plant_age, y=adjMean, group=path, col=path)) +
+  geom_ribbon(aes(x=plant_age, ymin=adjQ2.5, ymax=adjQ97.5, group=path, fill=path), alpha=0.25) +
+  facet_grid(.~protect)+
+  ylab("Decrease in probability of healthy plant\nrelative to monoculture treatment")+
+  xlab("Plant age at inoculation") +
+  scale_x_continuous(breaks=c(5,6,7)) +
+  scale_y_continuous(breaks=c(0,-0.2, 0.4, -0.6,-0.8))+
+  scale_color_manual(values=c(N2C3="darkorange", MOCK="yellow2")) +
+  scale_fill_manual(values=c(N2C3="darkorange", MOCK="yellow2")) +
+  theme_bw()
+
+predictions_plantage %>%
+  # filter(path=="MOCK" | protect=="MOCK") %>%
+  # filter(! (path=="MOCK" & protect == "MOCK")) %>%
+  left_join(mockMeans, relationship = "many-to-many") %>%
+  mutate(adjMean = mean-mean_mock, adjQ2.5 = Q2.5-mean_mock, adjQ97.5 = Q97.5-mean_mock) %>%
+  mutate(Strain = ifelse(!is.na(path) & path!="MOCK", as.character(path), ifelse(!is.na(protect) & protect !="MOCK", as.character(protect), NA))) %>%
+  mutate(Strain = factor(Strain, levels=c("WCS365","CHAO","CH267","PF5","N2C3"))) %>%
+  ggplot() +
+  geom_line(aes(x=plant_age, y=adjMean, group=path, col=path)) +
+  geom_ribbon(aes(x=plant_age, ymin=adjQ2.5, ymax=adjQ97.5, group=path, fill=path), alpha=0.25) +
+  facet_grid(.~protect)+
+  ylab("Decrease in probability of healthy plant\nrelative to MOCK treatment")+
+  xlab("Plant age at inoculation") +
+  scale_x_continuous(breaks=c(5,6,7)) +
+  scale_y_continuous(breaks=c(0,-0.2, 0.4, -0.6,-0.8))+
+  scale_color_manual(values=c(N2C3="darkorange", MOCK="yellow2")) +
+  scale_fill_manual(values=c(N2C3="darkorange", MOCK="yellow2")) +
+  theme_bw()
+
+
+### verison where it's monoculture first
+predictions_plantage %>%
+  mutate(Strain = ifelse(!is.na(path) & path!="MOCK" & protect == "MOCK", as.character(path), ifelse(!is.na(protect) & protect !="MOCK", as.character(protect), ifelse(protect=="MOCK" & path=="MOCK","MOCK",NA)))) %>%
+  filter(!is.na(Strain), !(protect!="MOCK" & path!="MOCK")) %>%
+  ggplot() +
+  geom_point(data=dat_ac, aes(x=plant_age, y=Alive)
+             # , position=position_jitterdodgev(jitter.height=0.1, jitter.width=0.5, dodge.height=-0.3)
+             , cex=0.1)+
+  # geom_jitter(data=dat_ac, aes(x=plant_age, y=as.numeric(Alive), col=path), width=0.25, height=0.1, cex=0.1) +
+  geom_ribbon(aes(x=plant_age, ymin=Q2.5, ymax=Q97.5), alpha=0.2)+
+  geom_line(aes(x=plant_age, y=mean))+
+  facet_grid(.~ Strain, labeller = labeller(protect=protect_labeller)) +
+  scale_x_continuous(breaks=c(5,6,7))+
+  scale_y_continuous(breaks=c(0,0.5,1))+
+  # scale_color_manual(values=c(N2C3="darkorange", MOCK="black")) +
+  # scale_fill_manual(values=c(N2C3="darkorange", MOCK="black")) +
+  xlab("Plant age (days)") +ylab("Probability of healthy plant") +
+  labs(col="Pathogen added", fill="Pathogen added")+
+  theme_bw() +
+  theme(legend.position = "top")
+
 
 
 # 
