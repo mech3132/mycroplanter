@@ -1,11 +1,7 @@
 argparse
-PIL
+Pillow
 numpy
-matplotlib
-os
-colorsys
-math
-sklearn
-progressbar
-time
+python-math
+regex
+pandas
 
