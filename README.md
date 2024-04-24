@@ -10,9 +10,7 @@ Raw data (image files, plate maps, etc) can be found on Dryad (DOI: 10.5061/drya
 * Priority effects experiment (priorityeffets)
 * Priority effects on plates (priorityplates)
 
-In the main directory, you will find the image processing script, 'process_athal_scan.py'. For help running the script, please see the associated README file.
-
-Note: For the manuscript, we use 'process_athal_scan.py' which is a simplified version of the full script, 'process_athal_scan_2024-03-25.py'. They are both capable of the same fucntions, but the latter has more options for the user and a streamlined "default" pipeline. The latter also uses a custom progress bar instead of the pre-built package 'ProgressBar'. If you are using this program for your own research, please use 'process_athal_scan_2024-03-25.py'.
+In the main directory, you will find the image processing script, 'process_athal_scan.py'. IMPORTANT NOTE: For the manuscript, we use 'process_athal_scan.py' in the main directory of this repositiory, which is a simplified version of the full script. THe full (and updated) version of the script is in "mycroplanter_processing_tutorial". Both scripts are both capable of the same fucntions, but the latter has more options for the user and a streamlined "default" pipeline. The latter also uses a custom progress bar instead of the pre-built package 'ProgressBar'. If you are using this program for your own research, please use the version in the tutorial.
 
 
 
