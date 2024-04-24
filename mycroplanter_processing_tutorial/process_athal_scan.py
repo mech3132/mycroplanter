@@ -5,7 +5,6 @@
 import argparse
 from PIL import Image
 import numpy as np  #for expanding array
-import matplotlib.pyplot as plt
 import os  # to make directories
 import colorsys # for converting to hsv?
 import math # for log, rounding
@@ -23,6 +22,8 @@ parser.add_argument('-a', '--additional_outputs', type=bool
                     , help='Include all possible outputs for pixel data; this includes ratios between r, g, and b values (including 5th, 50th, and 95 percentiles); and summarized pixel values for r, g, and b (including 5th, 50th, and 95 percentiles). In general, we do not recommend including this flag so as to save processing time. [Default: False]', default=False)
 parser.add_argument('-F', '--custom_formula', type=str
                     , help='Custom output as a calculation from any of the parameters you have flagged to include. (Default included are: pix_r_median, pix_g_median, pix_b_median, pix_h_median, pix_s_median, pix_v_median, ratio_r_median, ratio_g_median, ratio_b_median, ratio_r_q5, ratio_g_q5, ratio_b_q5, ratio_r_q95, ratio_g_q95, ratio_b_q95, pix_r_q5, pix_g_q5, pix_b_q5, pix_r_q95, pix_g_q95, pix_b_q95, all_plant_pixels.) Formula must be readable by base Python or math pacakges. For example, if you wanted to include an additional pixel output called "healthiness_hsv", you could include: healthiness_hsv:pix_h_median*pix_s_median*math.log10(all_plant_pixels)*1000. To include more than one custom output,  [Default: None]', default=None)
+parser.add_argument('-v', '--add_variable', type=str
+					, help='Adds a string as a variable in the final metadata column. Useful if you are processing many images and you need to merge outputs after, since you can differentiate by this variable. Format it as header:variable (e.g. plate:A). There is no default.', default=None)
 parser.add_argument('-s', '--save_subimages', type=bool
                     , help='Save sub-images? [default: False]', default=False)
 parser.add_argument('-b', '--save_blackandwhite', type=bool
@@ -51,6 +52,7 @@ colNames = args.colnames
 outputFP = args.output
 custom_formula = args.custom_formula
 additional_outputs = args.additional_outputs
+var = args.add_variable
 
 
 #### TESTING
@@ -209,12 +211,21 @@ class image():
 		print('\r ========== 100% done ==========')
 	def print_pixeldata(self, output):
 		global outputFP
+		global var
+		if var!=None:
+			headvar,fillvar = var.split(":")
 		colnames = list(self.pixeldata[list(self.pixeldata.keys())[0]].keys())
-		toPrint = 'subimage\t'+'\t'.join(colnames)+'\n'
+		toPrint = 'subimage\t'+'\t'.join(colnames)
+		if var!=None:
+			toPrint += '\t' + str(headvar)+'\n'
+		else:
+			toPrint += '\n'
 		for r in self.subimageNames:
 			toPrint += r+'\t'
 			for c in colnames:
 				toPrint += str(self.pixeldata[r][c])+'\t'
+			if var!=None:
+				toPrint += fillvar
 			toPrint = toPrint.strip()
 			toPrint +='\n'
 		toPrint = toPrint.strip()
@@ -396,7 +407,6 @@ else:
 	dic_func = {str.split(z,":")[0]:str.split(z,":")[1] for z in list_func}
 	for f in dic_func.keys():
 		imobj.custom_function_all_subimages(f, dic_func[f]) # store in pixel data file
-	
 
 #### Print images ####
 if save_subimages:
