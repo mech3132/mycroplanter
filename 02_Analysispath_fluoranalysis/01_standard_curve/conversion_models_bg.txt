@@ -1,5 +1,0 @@
-bg_conv_intercept	bg_conv_slope	version	fluor
-0	1	winter	crim
-0	1	intercept0	crim
-814.982254026583	0.0778190843326176	winter	neon
-0	0.0784131048145355	intercept0	neon
