@@ -164,26 +164,7 @@ ggsave("03_analysis/gg_priority_controls.png", gg_priority_controls, height=4, w
 # gg_priority_controls_v3
 # ggsave("03_analysis/gg_priority_controls_v3.png", gg_priority_controls_v3, height=6, width=10)
 # 
-# gg_priority_mixedonly <- dat_plant %>%
-#   filter(!is.na(WN_FC_fluor_offset), transfer_h!=0) %>%
-#   filter(StrainMix %in% c("WCS365-N2C3","N2C3-WCS365")) %>%
-#   mutate(Alive = Healthiness_hsv>400) %>%
-#   mutate(StrainMix = factor(StrainMix, levels=c("MOCK-MOCK","WCS365-MOCK","MOCK-WCS365","N2C3-MOCK","MOCK-N2C3","WCS365-N2C3","N2C3-WCS365"))) %>%
-#   ggplot(aes(x=StrainMix, y=WN_FC_fluor_offset)) +
-#   geom_boxplot() +
-#   geom_jitter(aes(col=Alive, pch=experiment), width=0.1, height=0) +
-#   facet_grid(.~transfer_h, scales = "free", drop=TRUE, space="free_x"
-#              , labeller = labeller(transfer_h=c(`0`="Simultaneous Inoc",`0.01`="Dipped in first", `3`="3h apart", `6`="6h apart",  `24`="24h apart", `48`="48h apart"))) +
-#   scale_color_manual(values=c(`TRUE`="darkgreen", `FALSE` = "yellow3")) +
-#   geom_hline(aes(yintercept=0)) +
-#   ylab("WCS365 : N2C3\n Log2 Fold change")+xlab("First Strain - Second Strain") +
-#   theme_bw() +
-#   theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5))+
-#   labs(col="Plant healthy\n(>400)", shape="Experiment") +
-#   ylim(-10,10)
-# gg_priority_mixedonly
-# ggsave("03_analysis/gg_priority_mixedonly.png", gg_priority_mixedonly, height=6, width=10)
-
+######Figure 5-A
 gg_priority_mixedonly <- dat_plant_peffect  %>%
   filter(!is.na(WN_FC_fluor_offset), transfer_h!=0) %>%
   filter(StrainMix %in% c("WCS365-N2C3","N2C3-WCS365")) %>%
@@ -660,7 +641,7 @@ gg_doubledip_fluor_nostrain0  <- dat_forddplot %>%
 gg_doubledip_fluor_nostrain0
 ggsave("03_analysis/gg_doubledip_fluor_nostrain0.png", gg_doubledip_fluor_nostrain0, height=4, width=6)
 
-
+## Figure 5B
 gg_doubledip_fluor_nostrain0_nosiminoc  <- dat_forddplot %>%
   filter(!(!is.na(strain0) & experiment=="2024-03-20") ) %>%
   filter(StrainMixsimple !="Simultaneous\ninoculation") %>%
@@ -672,11 +653,16 @@ gg_doubledip_fluor_nostrain0_nosiminoc  <- dat_forddplot %>%
   facet_wrap(.~Control, drop=TRUE, scales = "free")+
   # scale_alpha_manual(values=c(`TRUE`=1, `FALSE`=0))+
   theme_bw() +
-  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+  #theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ylab("WCS365:N2C3\nLog2 Fold change fluorescence") + xlab ("Dipping treatment") +
   scale_color_manual(values=c(`TRUE`="darkgreen", `FALSE` = "yellow3"), na.value = rgb(0,0,0,0))  +
   labs(col="Plant healthy\n(>400)") +
-  scale_y_continuous(breaks=c(-10,-5,0,5,10))
+  scale_y_continuous(breaks=c(-10,-5,0,5,10))+
+  scale_x_discrete("Dipping treatment", labels = c(
+    "Dipped in WCS365;\nthen dipped in MOCK;\nplaced in MOCK well" = "WCS365 -> \nMOCK",
+    "Dipped in N2C3;\nthen dipped in MOCK;\nplaced in MOCK well" = "N2C3 -> \nMOCK",
+    "Dipped in WCS365;\nthen dipped in N2C3;\nplaced in MOCK well" = "WCS365 -> \nN2C3",
+    "Dipped in N2C3;\nthen dipped in WCS365;\nplaced in MOCK well" ="N2C3 -> \nWCS365"))
 gg_doubledip_fluor_nostrain0_nosiminoc
 ggsave("03_analysis/gg_doubledip_fluor_nostrain0_nosiminoc.png", gg_doubledip_fluor_nostrain0_nosiminoc, height=4, width=6)
 
