@@ -212,19 +212,27 @@ gg_ratios_fluor_wplantbin
 ggsave("04_WCSvsN2C3_EDA/gg_ratios_fluor_wplantbin.png", gg_ratios_fluor_wplantbin, width=10, height=4)
 
 ### Plots for pub ####
+library(stringr)
+
 emptyDat <- dat %>% filter(StrainMix %in% c("WCS365-N2C3")) %>%select(ratio) %>%
   distinct() %>%
-  mutate(WN_FC_fluor_offset = NA)
+  mutate(WN_FC_fluor_offset = NA) %>%
+  mutate(ratio = str_replace(ratio, "-", ":"))%>% #replace - with : to match rest of paper
+  mutate(ratio = factor(ratio, levels = c("1:10000", "1:100", "1:1", "100:1", "10000:1"))) #re-order x-axis
+  
 
 dat_for_pubplots <- dat %>%
   mutate(fluortype = ifelse(!is.na(WN_FC_fluor_offset_nozeros),"Both strains\ndetected",
                             ifelse(WN_FC_fluor_offset>0,"N2C3 not\ndetected", "WCS365 not\ndetected"))) %>%
   mutate(fluortype = factor(fluortype, levels = c("N2C3 not\ndetected", "Both strains\ndetected", "WCS365 not\ndetected"))) %>%
   mutate(WN_FC_fluor_offset = ifelse(is.na(WN_FC_fluor_offset_nozeros),0,WN_FC_fluor_offset_nozeros)) %>%
-  filter(StrainMix == "WCS365-N2C3") 
+  filter(StrainMix == "WCS365-N2C3") %>%
+  mutate(ratio = str_replace(ratio, "-", ":"))%>% #replace - with : to match rest of paper
+  mutate(ratio = factor(ratio, levels = c("1:10000", "1:100", "1:1", "100:1", "10000:1"))) #re-order x-axis
   
-
-gg_ratios_mix_simp_main  <-  dat_for_pubplots%>%
+## Figure 4 ###
+#MAIN
+gg_ratios_mix_simp_main  <- dat_for_pubplots%>%
   filter(fluortype == "Both strains\ndetected") %>%
   ggplot(aes(x=ratio, y=WN_FC_fluor_offset)) +
   geom_boxplot() +
