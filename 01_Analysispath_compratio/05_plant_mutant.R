@@ -313,6 +313,56 @@ gg_plantmutant_v2 <- alldat_withpred %>%
 gg_plantmutant_v2
 ggsave("05_plant_mutant/gg_plantmutant_v2.png",gg_plantmutant_v2, height=4, width=8)
 
+### Updated Figure 3
+gg_plantmutant_v2_NEW <- alldat_withpred %>%
+  mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1:10", 
+                         ifelse(factor(round(path_cells_log)) == 6 & protect == "MOCK", "0:1 (N2C3 alone)",
+                                ifelse(factor(round(path_cells_log)) == 6 & protect != "MOCK", "1:1",
+                                       ifelse(factor(round(path_cells_log)) == 5 & protect == "MOCK", "0:0.1 (N2C3 alone)",
+                                              ifelse(factor(round(path_cells_log)) == 5 & protect != "MOCK", "1:0.1",
+                                                     ifelse(factor(round(path_cells_log)) == 0 & protect == "MOCK", "0:0 (no bacteria)",
+                                                            ifelse(factor(round(path_cells_log)) == 0 & protect != "MOCK", "1:0",NA)))))))) %>%
+  mutate(ratio2 = factor(ratio2, levels=c("0:0 (no bacteria)", "0:0.1 (N2C3 alone)","0:1 (N2C3 alone)", "1:0", "1:10","1:0.1","1:1"))) %>%
+  filter(ratio2 !="1:10") %>%
+  ggplot()+
+  # geom_jitter(data=dat_plantmutant_forplotting,
+  # aes(x=ratio2, y=Alive), cex=0.1, height=0.2, width=0.2)+
+  geom_point(data=dat_plantmutant_forplotting %>%
+               mutate(ratio2 = ifelse(factor(round(path_cells_log)) == 7, "1:10", 
+                                      ifelse(factor(round(path_cells_log)) == 6 & protect == "MOCK", "0:1 (N2C3 alone)",
+                                             ifelse(factor(round(path_cells_log)) == 6 & protect != "MOCK", "1:1",
+                                                    ifelse(factor(round(path_cells_log)) == 5 & protect == "MOCK", "0:0.1 (N2C3 alone)",
+                                                           ifelse(factor(round(path_cells_log)) == 5 & protect != "MOCK", "1:0.1",
+                                                                  ifelse(factor(round(path_cells_log)) == 0 & protect == "MOCK", "0:0 (no bacteria)",
+                                                                         ifelse(factor(round(path_cells_log)) == 0 & protect != "MOCK", "1:0",NA)))))))) %>%
+               mutate(ratio2 = factor(ratio2, levels=c("0:0 (no bacteria)", "0:0.1 (N2C3 alone)","0:1 (N2C3 alone)", "1:0", "1:10","1:0.1","1:1")))  %>% filter(ratio2 !="1:10") 
+             , aes(x=plant, y=Alive, col=ratio2, group=ratio2)
+             , show.legend = TRUE, position=position_jitterdodge(jitter.height=0.1, jitter.width=0.5, dodge=0.6)
+             , cex=0.1) +
+  geom_point(aes(x=plant, y=`med.50%`, col=ratio2), size=3, position = position_dodge2(width=0.6), size=0,) +
+  geom_pointrange(aes(x=plant, y=`med.50%`, ymin=`lwr.2.5%`, ymax = `upr.97.5%` , col=ratio2, lwd="95% prediction\ninterval"), position = position_dodge2(width=0.6), size=0) +
+  geom_pointrange(aes(x=plant, y=`med.50%`, ymin=`lwr5.5%`, ymax = `upr95.95%` , col=ratio2, lwd="90% prediction\ninterval"), position = position_dodge2(width=0.6), size=0) +
+  facet_grid(.~protect, scales="free_x", space = "free_x", labeller = labeller(protect=c(MOCK="MOCK", WCS365="WCS365",CHAO="CHA0", PF5 = "Pf5")))+
+  # scale_color_manual(values=c(MOCK="black", N2C3="orange"))+
+  # scale_fill_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) + 
+  # scale_color_manual(values=c(col0="black", bbc="magenta", bik1="salmon")) +
+  scale_color_manual(values=c("1:0"="gold2", "1:1"="darkorange4", "1:0.1"="darkorange", "0:1 (N2C3 alone)" = "azure4", "0:0.1 (N2C3 alone)" = "darkgrey", "0:0 (no bacteria)" = "lightgrey")) +
+  scale_linewidth_manual(values=c(2, 0.5)) +
+  labs(col="Non-Pathogen:Pathogen\ninoculation ratio",  linewidth="Model estimates") +
+  ylab("Probability of healthy plant")+ 
+  xlab("Plant genotype")+
+  scale_x_discrete("Plant genotype", labels = c(
+    "col0" = "Col-0",
+    "bbc" = expression(italic("bbc")),
+    "bik1" = expression(italic("bik1"))))+
+  scale_y_continuous(breaks=c(0,0.5,1))+
+  theme_bw()
+gg_plantmutant_v2_NEW
+unique(alldat_withpred)
+ggsave("05_plant_mutant/gg_plantmutant_v2_NEW.png",gg_plantmutant_v2_NEW, height=4, width=8)
+
+
+
 ###### SHORTCUT TO STATS #####
 alldat_withpred %>%
   filter(protect %in% c("WCS365","CHAO"), ratio %in% c("1-1"), plant%in% c("col0","bbc")) %>%
